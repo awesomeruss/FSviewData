@@ -502,7 +502,7 @@ create proc [dbo].[getADgroups](@email nvarchar(500)='') as
 begin
 	declare @domain varchar(100)
 	declare @groupfilter varchar(100)
-	set @domain='int.crawley.gov.uk'
+	set @domain='int.YOURDOMAIN.gov.uk'
 	set @groupfilter = 'AF%'
 	declare @sql nvarchar(max)
 	declare @path nvarchar(1024)
@@ -522,7 +522,6 @@ begin
 		-- set @sql='select cn from openquery(ADSI, ''<GC://DC='+replace(@domain,'.',',DC=')+'>;(objectClass=group);cn'') where cn like '''+@groupfilter+''' order by cn'
 		set @sql='select cn as name, cn as display from openquery(ADSI, ''select cn from ''''GC://DC='+replace(@domain,'.',',DC=')+''''' where cn='''''+replace(@groupfilter,'%','*')+''''' and objectCategory=''''Group'''''') order by 1' 
 	end
---	set @sql='select name from openquery(ADSI,''SELECT name FROM ''''LDAP://DC=crawley,DC=gov,DC=uk'''' where objectClass=''''Group'''' and member = '''''+@path+''''' '') order by name '
 --	print @sql
 	exec sp_executesql @sql
 end
@@ -1079,3 +1078,4 @@ GO
 exec buildviews
 go
 print 'create a scheduled task to run "exec buildviews" nightly, after the Firmstep data dump is updated'
+print 'also, update the getADgroups stored procedure to interact with your windows domain.'
