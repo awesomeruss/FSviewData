@@ -211,20 +211,6 @@
     },
     {
         "Editable": true,
-        "ID": "5d2c86d0156ab",
-        "Name": "Report process get last week name",
-        "Type": "DATABASE",
-        "LIM_id": "5a53627a149ae",
-        "LIM_name": "CBC LIM",
-        "Category": "Data Dump",
-        "data_type": "lookup",
-        "allow_offline": 0,
-        "Output_template": "{\"systemID\":\"5963774f652ab\",\"systemName\":\"af-data-dump\",\"query\":\"select convert(varchar,max(week_commencing),113) as Week from metadata_stat\",\"results_page_columns_db\":\"\",\"secure_fields_db_database\":\"\",\"escapeTokens\":\"yes\"}",
-        "log_only_on_error": 0,
-        "error_notification": "{\"LIM_id\":\"5a53627a149ae\",\"LIM_name\":\"CBC LIM\",\"recipients_to\":\"\"}"
-    },
-    {
-        "Editable": true,
         "ID": "5d2c8a94e3595",
         "Name": "Report process get quarter stats",
         "Type": "DATABASE",
@@ -233,8 +219,36 @@
         "Category": "Data Dump",
         "data_type": "lookup",
         "allow_offline": 0,
-        "Output_template": "{\"systemID\":\"5963774f652ab\",\"systemName\":\"af-data-dump\",\"query\":\"declare @d date\\nset @d = getdate() -- '01 mar 2019'\\ndeclare @q1 varchar(7)\\ndeclare @q0 varchar(7)\\nset @q1 = case when datepart(qq,@d)=1 then concat(datepart(yy,@d)-1,' Q4') else concat(datepart(yy,@d),' Q',datepart(qq,@d)-1) end\\nset @q0 = case when datepart(qq,@d)=1 then concat(datepart(yy,@d)-1,' Q3')when datepart(qq,@d)=2 then concat(datepart(yy,@d)-1,' Q4') else concat(datepart(yy,@d),' Q',datepart(qq,@d)-2) end\\n\\nselect \\n\\t@q1 as quarter,\\n\\tp.process_name,\\n\\tpr.profile_name,\\n\\tq1.table_name as table_name_hhh, \\n\\tq1.quarter,\\n\\tq1.created,\\n\\tq1.created-q0.created as created_delta,\\n\\tq1.self,\\n\\tq1.self-q0.self as self_delta,\\n\\tq1.dash,\\n\\tq1.dash-q0.dash as dash_delta,\\n\\tq1.service,\\n\\tq1.service-q0.service as service_delta,\\n\\tq1.forms,\\n\\tq1.forms-q0.forms as forms_delta\\n--,q0.*\\nfrom v_metadata_stat_quarter q1 \\n\\tinner join metadata_process p on q1.table_name=p.process_tablename\\n\\tleft join metadata_profile pr on q1.profile_id = pr.id\\n\\tleft join v_metadata_stat_quarter q0 \\n\\ton q0.quarter=@q0 and q1.table_name=q0.table_name and coalesce(q1.profile_id,0)=coalesce(q0.profile_id,0)\\n\\nwhere q1.quarter=@q1 \\norder by q1.CREATED desc\",\"results_page_columns_db\":\"\",\"secure_fields_db_database\":\"\",\"escapeTokens\":\"yes\"}",
+        "Output_template": "{\"systemID\":\"5963774f652ab\",\"systemName\":\"af-data-dump\",\"query\":\"declare @d date\\nset @d = getdate() -- '01 mar 2019'\\ndeclare @q1 varchar(7)\\nset @q1 = case when {quarter}<>'' and {quarter}<>'<br>' then {quarter} when datepart(qq,@d)=1 then concat(datepart(yy,@d)-1,' Q4') else concat(datepart(yy,@d),' Q',datepart(qq,@d)-1) end\\n\\nselect \\n\\tq1.quarter,\\n\\tp.process_name,\\n\\tpr.profile_name,\\n\\tq1.table_name as table_name_hhh, \\n\\tq1.created,\\n\\tq1.created-q0.created as created_delta,\\n\\tq1.self,\\n\\tq1.self-q0.self as self_delta,\\n\\tq1.dash,\\n\\tq1.dash-q0.dash as dash_delta,\\n\\tq1.service,\\n\\tq1.service-q0.service as service_delta,\\n\\tq1.forms,\\n\\tq1.forms-q0.forms as forms_delta\\n--,q0.*\\nfrom v_metadata_stat_quarter q1 \\n\\tinner join metadata_process p on q1.table_name=p.process_tablename\\n\\tleft join metadata_profile pr on q1.profile_id = pr.id\\n\\tleft join v_metadata_stat_quarter q0 \\n\\ton q0.quarter=dbo.prevquarter(@q1) and q1.table_name=q0.table_name and coalesce(q1.profile_id,0)=coalesce(q0.profile_id,0)\\n\\nwhere q1.quarter=@q1 \\norder by q1.CREATED desc\",\"results_page_columns_db\":\"\",\"secure_fields_db_database\":\"\",\"escapeTokens\":\"yes\"}",
         "log_only_on_error": 0,
         "error_notification": "{\"LIM_id\":\"5a53627a149ae\",\"LIM_name\":\"CBC LIM\",\"recipients_to\":\"\"}"
+    },
+    {
+        "Editable": true,
+        "ID": "5d2d93796eb7b",
+        "Name": "Data dump list quarters",
+        "Type": "DATABASE",
+        "LIM_id": "5a53627a149ae",
+        "LIM_name": "CBC LIM",
+        "Category": "Data Dump",
+        "data_type": "lookup",
+        "allow_offline": 0,
+        "Output_template": "{\"systemID\":\"5963774f652ab\",\"systemName\":\"af-data-dump\",\"query\":\"select quarter as name, concat(quarter,' (',aa,' - ', bb,')') as display from (\\nselect concat(datepart(yy,week_commencing),' Q',datepart(qq,week_commencing)) as quarter,\\n\\tmin(week_commencing)as aa , dateadd(dd,6,max(week_commencing)) as bb from  metadata_stat group by concat(datepart(yy,week_commencing),' Q',datepart(qq,week_commencing)) ) as fred\\n\\n\\torder by 1 desc\",\"results_page_columns_db\":\"\",\"secure_fields_db_database\":\"\",\"escapeTokens\":\"yes\"}",
+        "log_only_on_error": 0,
+        "error_notification": "{\"LIM_id\":\"5a53627a149ae\",\"LIM_name\":\"CBC LIM\",\"recipients_to\":\"\"}"
+    },
+    {
+        "Editable": true,
+        "ID": "5b03f4af4eac9",
+        "Name": "List AD-AF* Groups",
+        "Type": "DATABASE",
+        "LIM_id": "5a53627a149ae",
+        "LIM_name": "CBC LIM",
+        "Category": "Data Dump",
+        "data_type": "lookup",
+        "allow_offline": 0,
+        "Output_template": "{\"systemID\":\"5963774f652ab\",\"systemName\":\"af-data-dump\",\"query\":\"exec getADgroups\",\"results_page_columns_db\":\"\",\"secure_fields_db_database\":\"\",\"escapeTokens\":\"yes\"}",
+        "log_only_on_error": 0,
+        "error_notification": "{\"LIM_id\":\"276203df-4bee-11e5-ad20-22000a7a05f5\",\"LIM_name\":\"Crawley Borough Council\",\"recipients_to\":\"\"}"
     }
 ]

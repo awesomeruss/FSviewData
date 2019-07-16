@@ -1082,7 +1082,16 @@ begin
 	drop table #results
 	drop table #datas
 end
+GO
 
+create function dbo.prevquarter(@q varchar(7)) returns varchar(7) as
+begin
+	declare @q0 varchar(7)
+	select @q0=case 
+		when substring(@q,7,1)='1' then concat(convert(int,left(@q,4))-1,' Q4')
+		else concat(left(@q,6),convert(int,substring(@q,7,1))-1) END
+	return @q0
+end
 
 GO
 exec buildviews

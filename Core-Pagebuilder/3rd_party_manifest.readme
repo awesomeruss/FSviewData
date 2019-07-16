@@ -1,0 +1,38 @@
+
+We use these 3rd party files in our pages:
+
+moment/moment.min.js						https://cdn.jsdelivr.net/momentjs/latest/moment.min.js
+A basic library for manipulating dates and times. Used by datatables and datetimepicker
+
+daterangepicker/daterangepicker.js			https://cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js
+daterangepicker/select2.min.css				https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css
+Provides the date range picker UX
+
+datatables/datetime-moment					https://cdn.datatables.net/plug-ins/1.10.16/sorting/datetime-moment.js
+Integrates moment with datatables, required for sorting date columns properly
+
+datatables/elipsis
+https://cdn.datatables.net/plug-ins/1.10.19/dataRender/ellipsis.js
+Ability to limit max rendered size of columns
+
+datatables/select2.js						//cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js
+Adds the picklist UX used by YADCF to add clever filtering to datatables
+
+datatables/jquery.dataTables.yadcf.js 		//cdnjs.cloudflare.com/ajax/ibs/yadcf/0.9.2/jquery.dataTables.yadcf.js
+datatables/jquery.dataTables.yadcf.min.css 	https://cdnjs.cloudflare.com/ajax/libs/yadcf/0.9.2/jquery.dataTables.yadcf.min.css
+adds clever filtering to datatables
+
+showdown/showdown.min.js					//cdnjs.cloudflare.com/ajax/libs/showdown/1.8.6/showdown.min.js
+Converts markdown to html
+
+plotly/plotly-latest.min.js					https://cdn.plot.ly/plotly-latest.min.js
+Draws graphs
+
+fontawesome/all.css							//use.fontawesome.com/releases/v5.0.13/css/all.css
+Icons
+
+flag-icon-css								https://github.com/lipis/flag-icon-css
+CSS and images to show flags based on ISO 2-character codes
+
+maplace										https://cdnjs.cloudflare.com/ajax/libs/maplace-js/0.2.10/maplace.min.js
+Provides jquery-friendly interaction with google maps

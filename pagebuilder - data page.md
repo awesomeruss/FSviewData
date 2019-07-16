@@ -5,7 +5,8 @@
 - then paste in the HTML using the Tools>Source Code menu
 ```
 <div style="padding: 4px;">
-   <div id="lookup_config" class="config">[ {"type":"table", "lookup":"5a993d324b636","tab":"data", "tablebuttons":["csv"], "tableconfig":"frlipBt"}, {"type":"table", "lookup":"5d2c8a94e3595","tab":"rep1", "tablebuttons":["csv"], "tableconfig":"frlipBt"}, {"type":"global","lookup":"5d2c86d0156ab"} ]</div>
+   <div id="lookup_config" class="config">[ {"type":"table", "lookup":"5a993d324b636","tab":"data", "tablebuttons":["csv"], "tableconfig":"frlipBt"}, {"type":"table", "lookup":"5d2c8a94e3595","tab":"stats", "tablebuttons":["csv"], "tableconfig":"frlipBt"}, { "type": "selectlist", "lookup": "5d2d93796eb7b", "tab": "quarter" } ]</div>
+   <div id="quarter" class="config"></div>
    <div class="viewdata oco_pagebuilder">
       <div>
          <div class="oo_heading">
@@ -15,7 +16,7 @@
       </div>
       <ul id="myTab" class="nav nav-tabs">
          <li class="nav-item active"><a id="data-tab" class="nav-link" href="#data" data-toggle="tab">Processes</a></li>
-         <li class="nav-item"><a id="rep1-tab" class="nav-link" href="#rep1" data-toggle="tab">Top submissions</a></li>
+         <li class="nav-item"><a id="rep1-tab" class="nav-link" href="#rep1" data-toggle="tab">Quarterly stats</a></li>
       </ul>
       <div id="myTabContent" class="tab-content">
          <div id="data" class="tab-pane fade in active">
@@ -26,12 +27,22 @@
             <div class="results" style="min-height: 500px;"></div>
          </div>
          <div id="rep1" class="tab-pane fade">
-            <h2>Submission stats for week commencing ###Week###</h2>
-            <div class="spinner">
-               <img src="https://fs-filestore-eu.s3.amazonaws.com/crawley/resources/spinner.svg" />
-               <div class="msg">Loading...</div>
+            <div class="oo_heading">
+               <i>Statistics are based on whole weeks, which causes some variance in the period dates.</i> <br />
+               <div id="quarter_criteria">
+                  View stats for :
+                  <select id="quarter" class="newselectpicker">
+                     <option value="blank">Please wait...</option>
+                  </select>
+               </div>
             </div>
-            <div class="results" style="min-height: 500px;"></div>
+            <div id="stats">
+               <div class="spinner">
+                  <img src="https://fs-filestore-eu.s3.amazonaws.com/crawley/resources/spinner.svg" />
+                  <div class="msg">Loading...</div>
+               </div>
+               <div class="results" style="min-height: 500px;"></div>
+            </div>
          </div>
       </div>
    </div>

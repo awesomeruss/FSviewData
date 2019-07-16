@@ -1,0 +1,522 @@
+@import url('fontawesome/all.css');
+@import url('datatables/datatables.min.css');
+@import url('datatables/select2.min.css');
+@import url('datatables/jquery.dataTables.yadcf.min.css');
+@import url('flag-icon-css-master/css/flag-icon.min.css');
+@import url('currency.css');
+@import url('arrowsteps.css');
+
+/* BOOTSTRAP STUFF */
+/* remove bootstrap gutters to make alignment easier */
+.oco_pagebuilder .nopadding {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* remove excess whitespace around paragraphs */
+.oco_pagebuilder p {margin:0}
+
+/* hide buttons until they are bound */
+.unbound {display:none}
+
+/* equal height bootstrap rows, but breaks in ie9 and older. */
+.row-eq-height {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display:         flex;
+-webkit-flex-wrap: wrap;
+-ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+
+.row-eq-height:before, .row-eq-height:after {content:normal} /* fix for safari */
+.row-eq-height > [class*='col-'] {
+  display: flex;
+  flex-direction: column;
+}
+.minpadding {padding:2px} /* used for nested bootstrap grids */
+
+/* END OF BOOTSTRAP STUFF */
+
+/* DATATABLES STUFF */
+.results table.dataTable{margin: 0 0}
+.select2-container {min-width:150px !important; font-size:0.8em;}
+th div.yadcf-filter-wrapper {margin-left:20px}
+/* END OF DATATABLES STUFF */
+
+/* hide config and template sections used by JS */
+.config, div.oco_template {display:none}
+
+/* copy to clipboard cursor */
+.copycursor {cursor:copy;}
+
+/* conditional display classes */
+/* usage: dk###gry|red|amb|grn### for grey,red,amber,green*/
+/* dkgry_iffalse_###true|false### */
+.hideifblank:empty, .hideiffalse_false, .hideiftrue_true {display:none !important}
+.dkgry, .dkgry_iffalse_false, .dkgry_iftrue_true, .dk_Unknown	{color: #fff; background-color: #545454; border-color: #545454; } 
+.dkred, .dkred_iffalse_false, .dkred_iftrue_true, .dk_High		{color: #fff; background-color: #c10000; border-color: #c10000; }
+.dkamb, .dkamb_iffalse_false, .dkamb_iftrue_true, .dk_Medium	{color: #fff; background-color: #c16d00; border-color: #c16d00; }
+.dkgrn, .dkgrn_iffalse_false, .dkgrn_iftrue_true, .dk_Low	 	{color: #fff; background-color: #007236; border-color: #007236; }
+
+#app-content .ltgry, .ltgry_iffalse_false, .ltgry_iftrue_true	{color: #000; background-color: #eeeeee; border-color: #eeeeee; } 
+#app-content .ltred, .ltred_iffalse_false, .ltred_iftrue_true	{color: #000; background-color: #ffbcbc; border-color: #ffbcbc; }
+#app-content .ltamb, .ltamb_iffalse_false, .ltamb_iftrue_true	{color: #000; background-color: #ffe2bc; border-color: #ffe2bc; }
+#app-content .ltgrn, .ltgrn_iffalse_false, .ltgrn_iftrue_true 	{color: #000; background-color: #b1ffd6; border-color: #b1ffd6; }
+/* light red - even:ffbcbc > odd:e4a9a9 > even sorted:e4a9a9 > odd sorted:ffbcbc */
+/* ltred dataTable alternating rows and sort columns */
+#app-content table.dataTable.display tbody tr.ltred, 
+#app-content table.dataTable.order-column.stripe tbody tr.ltred {background-color:#ffbcbc }
+
+#app-content table.dataTable.display tbody tr.ltred.odd, 
+#app-content table.dataTable.order-column.stripe tbody tr.ltred.odd {background-color:#e4a9a9 }
+
+#app-content table.dataTable.display tbody tr.ltred>.sorting_1, 
+#app-content table.dataTable.order-column.stripe tbody tr.ltred>.sorting_1 {background-color:#e4a9a9 }
+
+#app-content table.dataTable.display tbody tr.ltred.odd>.sorting_1, 
+#app-content table.dataTable.order-column.stripe tbody tr.ltred.odd>.sorting_1 {background-color:#ffbcbc }
+
+/* ltamb dataTable alternating rows and sort columns */
+#app-content table.dataTable.display tbody tr.ltamb, 
+#app-content table.dataTable.order-column.stripe tbody tr.ltamb {background-color:#f7c685 }
+
+#app-content table.dataTable.display tbody tr.ltamb.odd, 
+#app-content table.dataTable.order-column.stripe tbody tr.ltamb.odd {background-color:#ffdeb3 }
+
+#app-content table.dataTable.display tbody tr.ltamb>.sorting_1, 
+#app-content table.dataTable.order-column.stripe tbody tr.ltamb>.sorting_1 {background-color:#ffdeb3 }
+
+#app-content table.dataTable.display tbody tr.ltamb.odd>.sorting_1, 
+#app-content table.dataTable.order-column.stripe tbody tr.ltamb.odd>.sorting_1 {background-color:#f7c685 }
+
+/* ltgrn dataTable alternating rows and sort columns */
+#app-content table.dataTable.display tbody tr.ltgrn, 
+#app-content table.dataTable.order-column.stripe tbody tr.ltgrn {background-color:#b1ffd6 }
+
+#app-content table.dataTable.display tbody tr.ltgrn.odd, 
+#app-content table.dataTable.order-column.stripe tbody tr.ltgrn.odd {background-color:#9bf4c6 }
+
+#app-content table.dataTable.display tbody tr.ltgrn>.sorting_1, 
+#app-content table.dataTable.order-column.stripe tbody tr.ltgrn>.sorting_1 {background-color:#9bf4c6 }
+
+#app-content table.dataTable.display tbody tr.ltgrn.odd>.sorting_1, 
+#app-content table.dataTable.order-column.stripe tbody tr.ltgrn.odd>.sorting_1 {background-color:#b1ffd6 }
+
+
+/* end of conditional display classes */
+
+/* generic box styling */
+.oco_roundbox {border-radius:4px;padding:5px;margin-bottom:1px;}
+.oco_heading h1, .oco_heading h2 {margin: 0;}
+
+/* tick and cross boxes */
+div.oco_tickcross.dkgrn span:before {content: "\f00c";}
+div.oco_tickcross.dkgry span:before {content: "\f057";}
+div.oco_tickcross span {  position: absolute;top: 50%;left:50%; transform: translate(-50%,-50%);font-weight:900; font-family: Font Awesome\ 5 Free; text-align:center; width:1.25em;-webkit-font-smoothing: antialiased;display: inline-block;font-style: normal;font-variant: normal;text-rendering: auto;line-height: 1;font-size:x-large}
+
+/* font awesome icons added using pseudo classes to page elements that are not i. */
+/* this lets you use fa icon classes on spans */
+.oco_fa:before {
+	font-family: Font Awesome\ 5 Free;
+	margin-right:0.25em;
+	font-weight:900;
+}
+
+/* call to action button - these should have a common style and be easy to distinguish from non-interactive content */
+.ctabutton a {
+	background-color: #f57300;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    justify-content: center;
+	color:#fff; 
+	text-decoration:none;
+	}
+.ctaicon, .ctaicon:active, .ctaicon:hover {color:#f57300}
+.ctaicon.h2 i {margin-top:5px}
+
+/* notes field */
+.oco_notes {font-style:italic}
+.oco_notes:empty {display:none}
+
+
+/* styling for markdown tables */
+.oco_greypanel table {width:100%}
+.oco_greypanel thead tr, .oco_greypanel th{background-color:#4b5055; color:#FFF;}
+.oco_greypanel tbody td, .oo_greypanel tbody th {padding-left: 3px;}
+
+.oco_greypanel tbody tr:nth-child(even) {background-color:#AAA; color:#FFF;}
+.oco_greypanel tbody tr:nth-child(odd) {background-color:#848e98; color:#FFF;}
+
+/* fontawesome styles for ocorian picklist values */
+.oco-Individual:before { content: "\f007";} /* user */
+.oco-Organization:before, .oco-Company:before { content: "\f1ad";} /* building */
+.oco-Deceased:before { content: "\f54c";} /* skull */
+
+/* hideswitch styles */
+.hideswitch{
+    float: right;
+    padding: 5px 15px;
+    border-radius: 4px;
+	border:1px solid #f57300;
+    margin: 1px;
+}
+
+/* .hideswitch:before{content:'more ';} */
+/* .on.hideswitch:before{content:'less ';} */
+
+.on.hideswitch{color:#fff;background-color:#f57300}
+.hideswitch{color:#f57300;background-color:#fff}
+
+/* big button styles */
+.oco_bigbutton, .oco_bigbutton:hover {
+    text-align: center;
+    padding: 25px 10px;
+    border-radius: 4px;
+    border: 1px solid #f57300;
+    color: #f57300;
+    font-size: 2em;
+    margin: 9px 3px;
+    text-decoration: none;
+}
+.oco_iconspacer {
+	padding:8px;
+}
+.oco_iconbutton{
+    padding: 8px;
+    border-radius: 4px;
+    background-color: #f57300;
+    border-color: #f57300;
+    color: white;
+}
+.oco_iconbutton:hover{
+	color:#000;
+	background-color:#eee;
+}
+
+/* used for team images */
+img.oco_teampic {width:100px;height:100px;border-radius:5%; object-fit:cover; margin-right:12px; margin-top:12px}
+
+/* standard panels */
+div.oco_greypanel {background-color: #eee; padding-bottom:10px;}
+div.oco_panel, div.oco_greypanel {    border: 1px solid white;}
+div.oco_greypanel .fa-li, div.oco_panel .fa-li {top:0px}
+
+
+/* header panel */
+div.oco_header {
+    margin: 0;
+    background-color: #4b5055;
+    color: white;
+    font-weight: bold;
+	padding: 0px 15px;
+	border-radius:5px;
+	}
+
+
+/* country flag style */
+.oco_country{
+	min-height: 46px;
+	border-width: 5px;
+	border-style: solid;
+    border-radius: 5px;
+	padding:0px;
+    padding-left: 55px;
+	margin-bottom:2px;
+	width: 100%;
+    background-position-x: left;
+	background-size: 48px 36px;
+	background-repeat: no-repeat;
+    position: relative;
+}
+
+/* country flags that are in markdown tables */
+div.oco_country_list table td:first-child {
+	background-size: contain;
+	background-repeat: no-repeat;
+	padding-left: 2em;
+}
+
+div.oco_country_list table th:first-child {
+	padding-left:2em;
+}
+
+/* bootstrap nav pills */
+.oco_pagebuilder .nav-pills>li>a {
+    color: #fff;
+    background-color: rgb(204,102,51);
+}
+
+.oco_pagebuilder .nav-pills>li.active>a,
+.oco_pagebuilder  .nav-pills>li>a:focus
+{
+    color: #fff;
+    background-color: #f57300 ;
+}
+.oco_pagebuilder .nav-pills>li>a:hover 
+{
+    color: #000;
+    background-color: #eee ;
+}
+
+/* fontawesome layering for counters */
+.fa-layers-counter {
+	background-color:#f57300;
+    border-radius: 1em;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    color: #fff;
+    height: 1.5em;
+    line-height: 1;
+    max-width: 5em;
+    min-width: 1.5em;
+    overflow: hidden;
+    padding: .25em;
+    right: -6px;
+    text-overflow: ellipsis;
+    top: 10px;
+    -webkit-transform: scale(.25);
+    transform: scale(.4);
+    -webkit-transform-origin: top right;
+    transform-origin: top right;
+}
+
+.fa-layers-counter, .fa-layers-text {
+    display: inline-block;
+    position: absolute;
+    text-align: center;
+}
+*, ::after, ::before {
+    box-sizing: border-box;
+}
+.fa-fw {
+    text-align: center;
+    width: 1.25em;
+}
+.fa-layers {
+    display: inline-block;
+    height: 1em;
+    position: relative;
+    text-align: center;
+ /*   vertical-align: -.125em; */
+    width: 1em;
+	transform:scale(2); -webkit-transform:scale(2);margin-right:1em;
+}
+
+
+/* Transform printable styles */
+h1, .htmlsummary > div{
+  font-family:Arial, 'Open Sans',sans-serif;
+  margin:0px;
+  font-size:0.8em;
+}
+.h1, h1 { 
+  color: rgb(204,102,51); 
+  font-size:1.3em;
+}
+.h2, h2 { 
+  color: rgb(204,102,51); 
+  font-size:1.2em;
+}
+.h3, h3 { 
+  color: rgb(204,102,51); 
+  font-size:1.1em;
+}
+.h4, h4 { 
+  color: rgb(204,102,51); 
+  font-size:1em;
+}
+
+/* overrides */
+.htmlsummary #concatDetails, .htmlsummary #concatAddress, .htmlsummary #concatContact, .htmlsummary #concatName, .htmlsummary #geohint, .htmlsummary #patchworkingpatch  {display:block !important; visibility:visible !important} 
+#Your_details #forms_group_name, #Your_details #subscribe, #Your_details .section {   display: none;}
+/* end of overrides */
+
+.htmlsummary .section{
+  border-radius:5px; 
+  padding:5px; 
+  margin:2px; 
+  background-color: #DDD;
+}
+
+.htmlsummary .section > .section{
+  border-radius:0px; 
+  padding:0px; 
+  margin:0px; 
+}
+
+.htmlsummary div.field{
+  zborder-bottom:1px #EEE solid; 
+}
+
+.htmlsummary .section .section .sectionheading, .htmlsummary .hidden {
+  display:none;
+}
+
+
+.htmlsummary div.sectionheading{
+  font-size:1.2em;
+  color: rgb(204,102,51);
+}
+ .htmlsummary div.caption,  .htmlsummary div.sectionheading{
+  font-weight:bold; 
+}
+ .htmlsummary div.caption, .htmlsummary div.value {
+  vertical-align: top;
+  display: inline-block;
+  font-size:0.9em;
+}
+.htmlsummary div.subformheading, .htmlsummary div.subformrecordheader{
+  color:white;
+}
+
+.htmlsummary div.value{
+  color: #4A4F54;
+  background-color:white;
+  width: 58%;
+  margin:1px;
+  margin-left:3px;
+  padding:1px;
+  border-radius:2px;
+}
+.htmlsummary div.caption{
+  width:40%; 
+  text-align:right;
+}
+.htmlsummary div.para div.value,.htmlsummary div.h1 div.value,.htmlsummary div.h2 div.value,.htmlsummary div.h3 div.value,.htmlsummary div.h4 div.value{
+  background-color: #DDD;
+  width:100%; 
+}
+.htmlsummary .subform div.caption{
+  width:40%; 
+}
+
+.subform {width:96%; 
+  margin:5px;
+  background-color:gray;
+  padding:5px;
+  border-radius:5px;
+}
+.subformrecord {
+  padding:0px;
+  margin:0px;}
+.subformheader{
+  background-color: rgb(204,102,51);
+  color: #FFF;
+  padding: 3px 10px;
+  text-align:left; 
+  font-weight:bold; 
+}
+
+.subformvalue{
+  color: #4A4F54;
+  border:1px rgb(204,102,51) solid; 
+  padding: 3px 10px;
+  margin:0px;
+}
+
+.mapimage img {
+/*    float: right; */
+    margin-left: 1%;
+	width:40%;
+/*	max-width:250px; */
+}
+
+/* print mode styles */
+	.printonly{display:none} /* use the printonly class to hide content unless in print mode */
+    .printmodemsg::after {content:"Activate print mode."}
+	.printready #printhelp {min-height:550px}
+	.printready .printonly{display:initial}
+	
+@media screen{
+	.printready .printmodemsg::after {content:"Use File>Print to print this page. You may need to set the scaling to 60% to get good results. Click here to deactivate print mode."}
+	.printready .printmode{position:fixed;top:0}
+	.oco_pagebuilder.printready{margin-top:30px}
+ }
+@media print {
+	.printready .printmodemsg::after {content:"";}
+	.modal.DO-NOT-PRINT{display:none !important;visibility:hidden;}
+	.printready .printmode{display:none;}
+	
+	
+}
+ 	.printready ul.nav-pills, 
+	.printready .hideswitch, 
+	.printready .ctaicon, 
+	.printready .oco_bigbutton {display:none}
+
+	.printready a[href]:after {content: none !important;}
+	.printready #printhelp .hideswitch,
+    .printready .party_contact, 
+    .printready .party_country, 
+	.printready .party_other, 
+    .printready .vehicle_services, 
+	.printready .vehicle_risks,
+	.printready .vehicle_formation, 
+    .printready .tab-pane { display: block !important;}
+	/* .printready .tab-pane { page-break-before:always} */
+	
+@media print 
+{
+  a[href]:after { content: none !important; }
+  img[src]:after { content: none !important; }
+  .dataTables_scroll{font-size:0.7em}
+  table td:nth-child(1n+7), 
+  .reportitdata table td:nth-child(2), 
+  .reportitdata table td:nth-child(3), 
+  hr,
+  table th, 
+  #newcase, 
+  .dataTables_length, 
+  .dataTables_filter,
+  .dataTables_paginate, 
+  .dt-buttons,
+  .gm-style-iw,
+  a .fas  {display: none;}
+  .gm-style-iw + button   {display: none !important;}
+	.pagebreakafter {page-break-after:always}
+    .modal {
+    opacity: 1;
+    display: block !important;
+   
+	}
+	.modal.fade .modal-dialog {
+		width: 100%;
+		margin:0;
+		position:inherit;
+		-webkit-transform:none;
+		transform:none;
+
+	}
+	.modal button {display:none}
+	.results {
+		min-height: 0px !important;
+	}
+	
+	body, #app-content, .modal{
+		position:relative;
+		display:block;
+		float:none;
+	}
+	.alert{
+		font-size:10px;
+	}
+	
+/*
+	.modal .modal-content{
+		position:relative;
+		display:block;
+		float:none;
+		-webkit-region-break-inside: avoid;
+		-webkit-region-break-after: always;
+		page-break-after: always;
+		page-break-inside: avoid;
+    }
+	*/
+	
+}
+
+ 
+ 
