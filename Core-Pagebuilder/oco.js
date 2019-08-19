@@ -219,17 +219,22 @@
     function get_data(x, extraconfig) {		
 		sid = typeof parent.FS !== "undefined" && parent.FS !== null ? (ref = parent.FS.Auth) !== null ? ref.session['auth-session'] : void 0 : void 0;
 		//$('#console').append("sid is "+sid+"<br/>");
-		if(typeof parent.FS.Auth.session.user =='undefined')
+		if((typeof parent.FS.Auth.session.user =='undefined')&&($('#ucrn.config').html().replace(/&nbsp;$/, '') !=''))
 		{
 			$('#'+x.tab+' .spinner').show();
 			$('#'+x.tab+' .spinner .msg').html('User details not found. Please refresh, or click "Home" and then the browser "Back" button.').show();
 			return;
 		}
+		
+		
+		var e = typeof sid !== "undefined" ? typeof parent.FS.Auth.session.user  !== "undefined" && parent.FS.Auth.session.user !== null ? parent.FS.Auth.session.user.email : '' :  '';
+		var ucrn = typeof sid !== "undefined" ? typeof parent.FS.Auth.session.user  !== "undefined" && parent.FS.Auth.session.user !== null ? parent.FS.Auth.session.user.attributes.ucrn : '' :  '';
+			
+	
 		//bind the refresh button event
 		$('.'+x.tab+'.refreshbutton.unbound').on('click', function(){get_data(x);  $('i', this).rotate({ count:4, duration:0.6, easing:'ease-out' });}).removeClass("unbound");
 		// bind any unbound print mode buttons
 
-		var e=parent.FS.Auth.session.user.email;
 		var pt=$('#'+x.table).html()
 		if( typeof pt =='undefined') pt='';
 		// get an object of name/value config pairs
@@ -241,9 +246,9 @@
 		$('.config').map(function() {
 			if(this.id!='lookup_config') t[this.id]=$(this).html().replace(/&nbsp;$/, ""); //if there is an &nbsp; at the end, remove it - workaround for a bug in FS token substitution. 
 		});
-		t['Email_Address']=parent.FS.Auth.session.user.email;			
-		t['user_email']=parent.FS.Auth.session.user.email;
-		t['ucrn']=parent.FS.Auth.session.user.attributes.ucrn;
+		t['Email_Address']=e;			
+		t['user_email']=e;
+		t['ucrn']=ucrn;
 	//    console.log('running lookup...'+x.lookup+' for '+x.tab+' with data:');
 	//    console.log(t);
 		$('#'+x.tab+' .spinner').show();
