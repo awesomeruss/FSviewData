@@ -239,7 +239,7 @@
 			t=extraconfig;
 		}
 		$('.config').map(function() {
-			if(this.id!='lookup_config') t[this.id]=$(this).html();
+			if(this.id!='lookup_config') t[this.id]=$(this).html().replace(/&nbsp;$/, ""); //if there is an &nbsp; at the end, remove it - workaround for a bug in FS token substitution. 
 		});
 		t['Email_Address']=parent.FS.Auth.session.user.email;			
 		t['user_email']=parent.FS.Auth.session.user.email;
@@ -603,7 +603,14 @@
 			
 					
 			
-			var myTable=$t.DataTable( {dom: config.tableconfig, data: rows,columns: cols, "scrollX": true, buttons:config.tablebuttons, "createdRow":rr_function, "configtab":config.tab, "sScrollX": "100%", "sScrollXInner": "100%",drawCallback:(config.map?function(a){update_map(a,this.api(),config)}:null)} );
+			var myTable=$t.DataTable( {dom: config.tableconfig, data: rows, columns: cols, "scrollX": true, 
+				buttons:config.tablebuttons, 
+				"createdRow":rr_function, 
+				"configtab":config.tab, 
+				"sScrollX": "100%", 
+				"sScrollXInner": "100%",
+				drawCallback:(config.map?function(a){update_map(a,this.api(),config)}:null),
+				"order":(config.order?config.order:[[0, "desc"]])	}			);
 			myTable.on( 'draw.dt', function () {
 				// add the DO-NOT-PRINT class to all the modals, then remove from those that are still in the table
 				$('[id^=ModalCase]').addClass('DO-NOT-PRINT')
@@ -612,7 +619,7 @@
 					var t=$(this).data("target"); 
 					$(t).removeClass('DO-NOT-PRINT');
 				});
-				if(loadnotes()>0)
+				if(loadnotes()>0 && $(this).dataTable().columns)
 				{
 					$(this).dataTable().columns.adjust();	//fnAdjustColumnSizing(); 
 				}
