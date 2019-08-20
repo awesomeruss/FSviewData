@@ -1,4 +1,4 @@
-.hideuntilglobal, .hidewhenblank:empty, .showwhentrue_false, .hidewhentrue_true {visibility:hidden; display:none}
+.hideuntilglobal, .hidewhenblank:empty, .showwhentrue_false, .hidewhentrue_true, .hidewhenfalse_false {visibility:hidden; display:none}
 .spinner img { width: 70px;}
 
 /* hide datatables filter controls until hovering, to keep column headings small */
