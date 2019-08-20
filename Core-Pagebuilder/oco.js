@@ -220,10 +220,13 @@
     function get_data(x, extraconfig) {		
 		sid = typeof parent.FS !== "undefined" && parent.FS !== null ? (ref = parent.FS.Auth) !== null ? ref.session['auth-session'] : void 0 : void 0;
 		//$('#console').append("sid is "+sid+"<br/>");
-		if((typeof parent.FS.Auth.session.user =='undefined')&&($('#ucrn.config').html().replace(/&nbsp;$/, '') !=''))
+		// you could have a session but not be logged in, which should be allowable
+		if((typeof parent.FS.Auth.session.user =='undefined')&&($('#ucrn.config').length==0 || $('#ucrn.config').html().replace(/&nbsp;$/, '') !=''))
 		{
 			$('#'+x.tab+' .spinner').show();
-			$('#'+x.tab+' .spinner .msg').html('User details not found. Please refresh, or click "Home" and then the browser "Back" button.').show();
+			var uri=parent.window.location.origin+'/login/?return_url='+encodeURIComponent(parent.window.location.pathname+parent.window.location.search+parent.window.location.hash);
+			$('#'+x.tab+' .spinner .msg').html('User details not found. Please refresh, or click "Home" and then the browser "Back" button, or <a href="'+uri+'" target="_parent">log in</a>.').show();
+			// https://crawleybc-dash.achieveservice.com/login/?support&return_url=http%3A%2F%2Fcrawleybc-dash.achieveservice.com%2Fdata
 			return;
 		}
 		
