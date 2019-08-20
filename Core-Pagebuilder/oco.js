@@ -7,6 +7,7 @@
 			"lookup":"5b4dec0e8c88a", 		// the ID of the Firmstep Forms lookup to run. Any columns that end in _hhh are hidden. Any columns that end in _sss can have associated _cls (styling class), _url and _icn (fontawesome icon). A "rowclass_hhh" column can also apply a styling class to the row.
 			"tab":"tab_opportunity",  		// the HTML element that will contain the lookup data. Is also expected to contain a ".spinner" and a ".spinner .msg"
 			"counter":"count_opportunity", 	// ID of a counter that should be set with the rowcount
+			"nodata":"NoResultsBox", 	// ID of a 'no results' error message element which will be .show() if there are no results.
 			"tablebuttons":["csv"],  		// See DataTables docs, "buttons" option. Controls the buttons that are displayed
 			"tableconfig":"frlipBt"			// See DataTables docs, "dom" option. Controls which datatables elements are used, and their sequence 
 		},
@@ -1073,6 +1074,7 @@
 	
 	   if(!$.isEmptyObject(data.transformed.rows_data))
 	   {
+		   (config.nodata)?$('#'+config.nodata).hide().addClass('hidden'):void 0;
 			switch(config.type){
 				case "global":
 					draw_results_template(data,config);
@@ -1110,6 +1112,7 @@
 	   else
 	   {
 			$('#'+config.tab+' .spinnermsg').html('No data').show();
+			(config.nodata)?$('#'+config.nodata).show().removeClass('hidden'):void 0;
 	   }
 		$('#'+config.tab+' .spinner').hide();
 
