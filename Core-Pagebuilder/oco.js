@@ -314,6 +314,18 @@
 		return o;	   
 	}
 
+	function render_markdown(data, type, row, meta) {
+		var o=data;
+		if(type === 'display'){
+			var myShowdown = new showdown.Converter({tables: true, strikethrough: true}); 
+			o=myShowdown.makeHtml(o);
+			//o='<small>'+$('<div>').text(o).html()+'</small>';
+			//o='<small>'+o+'</small>';
+		}
+		// console.log('rendering '+type+'-'+data +' as '+o);
+		return o;	   
+	}
+
 	function print_this(id){
 		console.log(id);
 		
@@ -542,7 +554,12 @@
 				{
 					index=index.slice(0,-4); //take off the _xml
 					r=render_xml;
-				}												 
+				}			
+				if(index.slice(-3)=="_md") //markdown columns
+				{
+					index=index.slice(0,-3); //take off the _md
+					r=render_markdown;
+				}	
 				if(index.slice(-4)=="_sss") //special columns
 				{
 					index=index.slice(0,-4); //take off the _sss
@@ -682,7 +699,7 @@
 	
 	function draw_results_template(data,config) {
 		// search+replace here
-		var myShowdown = new showdown.Converter({tables: true, strikethrough: true});
+		var myShowdown = new showdown.Converter({tables: true, strikethrough: true}); 
 		var rowcount=0;
 		if(config.type==="template")
 		{
@@ -706,12 +723,18 @@
 					if (data.transformed.rows_data.hasOwnProperty(rec)) {
 						// console.log('replace '+prop+' with '+data.transformed.rows_data[rec][prop]);
 						var fieldVal=data.transformed.rows_data[rec][prop];
+						$t.html($t.html().split('####'+prop+'####').join(fieldVal));
 						if(prop.slice(-3)=='_md') //markdown content in column	
 							fieldVal = myShowdown.makeHtml(fieldVal);
 						else if(prop.slice(-3)=='_rw') //raw content in column	
 							fieldVal = fieldVal;
 						else fieldVal=escapeHtml(fieldVal);
-						$t.html($t.html().split('###'+prop+'###').join(fieldVal));
+						$t.html($t.html().split('###'+prop+'###').join(fieldVal)); 
+								/* global templates will break dynamic event bindings on anything inside the body. Use something like this to avoid the problem:
+								$('body').on('click','.childDiv', {} ,function(e){
+								//insert your code here
+								})
+								*/
 					}
 				}
 				$t.html($t.html().split('###rownum###').join(rowcount));
@@ -737,7 +760,7 @@
 		if(config.type==="template") { selector='#'+config.tab+' .results'}
 		else {
 			selector='body';
-			$('.hideuntilglobal').removeClass('hideuntilglobal');
+			if(typeof(config.sub)=='undefined') $('.hideuntilglobal').removeClass('hideuntilglobal');
 		}
 		$(selector+' .momentfromnow').each(function(i,v){
 			var d=moment($(v).html(),['YYYY-MM-DD','DD/MM/YYYY HH:mm:ss'],true);
@@ -773,15 +796,18 @@
 		}
 		// format money fields
 		$(selector+' .results .money').not(':contains(###)').each(function(i,v){$(v).text(Number($(v).text()).toLocaleString('en'))}).removeClass('money');
-		// add 'copy to clipboard' script to anything that has the copycursor class
-		$(selector+' .copycursor.unbound').not(':contains(###)').click(function(){copyToClipboard(this);}).removeClass('unbound');
-		// bind the hideswitch function to any controls that need it
-		$(selector+' .hideswitch.unbound').not(':contains(###)').click(function(){hideswitch(this);}).removeClass('unbound');
-		// bind the tablefilter function to any controls that need it
-		$(selector+' .tablefilter.unbound').not(':contains(###)').click(function(){tablefilter(this);}).removeClass('unbound');
-		// rewrite any markdown inside oco_country_list to include flags
-		$(selector+' div.oco_country_list.unbound table td:first-child').not(':contains(###)').each(function(){$(this).addClass('flag-icon-'+$(this).html().substring(0,2));$(this).html($(this).html().slice(2));});
-		$(selector+' div.oco_country_list.unbound').not(':contains(###)').removeClass('unbound');
+		if(typeof(config.sub)=='undefined')
+		{
+			// add 'copy to clipboard' script to anything that has the copycursor class
+			$(selector+' .copycursor.unbound').not(':contains(###)').click(function(){copyToClipboard(this);}).removeClass('unbound');
+			// bind the hideswitch function to any controls that need it
+			$(selector+' .hideswitch.unbound').not(':contains(###)').click(function(){hideswitch(this);}).removeClass('unbound');
+			// bind the tablefilter function to any controls that need it
+			$(selector+' .tablefilter.unbound').not(':contains(###)').click(function(){tablefilter(this);}).removeClass('unbound');
+			// rewrite any markdown inside oco_country_list to include flags
+			$(selector+' div.oco_country_list.unbound table td:first-child').not(':contains(###)').each(function(){$(this).addClass('flag-icon-'+$(this).html().substring(0,2));$(this).html($(this).html().slice(2));});
+			$(selector+' div.oco_country_list.unbound').not(':contains(###)').removeClass('unbound');
+		}
 		// set the counter to be the rowcount
 		if(config.counter){
 			$('.'+config.counter).each(function(){$(this).html(rowcount)}); 
@@ -1002,7 +1028,7 @@
 			api.columns().every(function() {mycols.push( $(this.header()).children('.DataTables_sort_wrapper').text())})
             api.rows({page: 'all', search: 'applied'}).every(function(rowIdx, tableLoop, rowLoop) {
                 var data = this.data();
-                if(data[locIdx].split(', ').length==2) //the location field's content must be in the format "lat, lng"
+                if((data[locIdx].split(', ').length==2) && (data[locIdx]!="0, 0")&& (data[locIdx]!=", ")) //the location field's content must be in the format "lat, lng" and not be "0, 0"
                 {    
                     // console.log(data[linkIdx]);
                     var loc = {
@@ -1024,7 +1050,7 @@
 							loc.html=loc.html+'<br/><b>'+c+'</b>: '+data[i];
 						});
 					}
-                    markers.locations.push(loc);
+				   markers.locations.push(loc); 
                    var row = this.node();
                     // Hack that adds a class with the row number to the tr (using rowLoop since that's the "natural"
                     // order and not the fixed rowIdx one used by dataTables). Whenever we sort or filter rows change
