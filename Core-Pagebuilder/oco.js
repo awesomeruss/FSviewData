@@ -7,6 +7,7 @@
 			"lookup":"5b4dec0e8c88a", 		// the ID of the Firmstep Forms lookup to run. Any columns that end in _hhh are hidden. Any columns that end in _sss can have associated _cls (styling class), _url and _icn (fontawesome icon). A "rowclass_hhh" column can also apply a styling class to the row.
 			"tab":"tab_opportunity",  		// the HTML element that will contain the lookup data. Is also expected to contain a ".spinner" and a ".spinner .msg"
 			"counter":"count_opportunity", 	// ID of a counter that should be set with the rowcount
+			"nodata":"NoResultsBox", 	// ID of a 'no results' error message element which will be .show() if there are no results.
 			"tablebuttons":["csv"],  		// See DataTables docs, "buttons" option. Controls the buttons that are displayed
 			"tableconfig":"frlipBt"			// See DataTables docs, "dom" option. Controls which datatables elements are used, and their sequence 
 		},
@@ -219,17 +220,25 @@
     function get_data(x, extraconfig) {		
 		sid = typeof parent.FS !== "undefined" && parent.FS !== null ? (ref = parent.FS.Auth) !== null ? ref.session['auth-session'] : void 0 : void 0;
 		//$('#console').append("sid is "+sid+"<br/>");
-		if(typeof parent.FS.Auth.session.user =='undefined')
+		// you could have a session but not be logged in, which should be allowable
+		if((typeof parent.FS.Auth.session.user =='undefined')&&($('#ucrn.config').length==0 || $('#ucrn.config').html().replace(/&nbsp;$/, '') !=''))
 		{
 			$('#'+x.tab+' .spinner').show();
-			$('#'+x.tab+' .spinner .msg').html('User details not found. Please refresh, or click "Home" and then the browser "Back" button.').show();
+			var uri=parent.window.location.origin+'/login/?return_url='+encodeURIComponent(parent.window.location.pathname+parent.window.location.search+parent.window.location.hash);
+			$('#'+x.tab+' .spinner .msg').html('User details not found. Please refresh, or click "Home" and then the browser "Back" button, or <a href="'+uri+'" target="_parent">log in</a>.').show();
+			// https://crawleybc-dash.achieveservice.com/login/?support&return_url=http%3A%2F%2Fcrawleybc-dash.achieveservice.com%2Fdata
 			return;
 		}
+		
+		
+		var e = typeof sid !== "undefined" ? typeof parent.FS.Auth.session.user  !== "undefined" && parent.FS.Auth.session.user !== null ? parent.FS.Auth.session.user.email : '' :  '';
+		var ucrn = typeof sid !== "undefined" ? typeof parent.FS.Auth.session.user  !== "undefined" && parent.FS.Auth.session.user !== null ? parent.FS.Auth.session.user.attributes.ucrn : '' :  '';
+			
+	
 		//bind the refresh button event
 		$('.'+x.tab+'.refreshbutton.unbound').on('click', function(){get_data(x);  $('i', this).rotate({ count:4, duration:0.6, easing:'ease-out' });}).removeClass("unbound");
 		// bind any unbound print mode buttons
 
-		var e=parent.FS.Auth.session.user.email;
 		var pt=$('#'+x.table).html()
 		if( typeof pt =='undefined') pt='';
 		// get an object of name/value config pairs
@@ -239,11 +248,11 @@
 			t=extraconfig;
 		}
 		$('.config').map(function() {
-			if(this.id!='lookup_config') t[this.id]=$(this).html();
+			if(this.id!='lookup_config') t[this.id]=$(this).html().replace(/&nbsp;$/, ""); //if there is an &nbsp; at the end, remove it - workaround for a bug in FS token substitution. 
 		});
-		t['Email_Address']=parent.FS.Auth.session.user.email;			
-		t['user_email']=parent.FS.Auth.session.user.email;
-		t['ucrn']=parent.FS.Auth.session.user.attributes.ucrn;
+		t['Email_Address']=e;			
+		t['user_email']=e;
+		t['ucrn']=ucrn;
 	//    console.log('running lookup...'+x.lookup+' for '+x.tab+' with data:');
 	//    console.log(t);
 		$('#'+x.tab+' .spinner').show();
@@ -603,7 +612,14 @@
 			
 					
 			
-			var myTable=$t.DataTable( {dom: config.tableconfig, data: rows,columns: cols, "scrollX": true, buttons:config.tablebuttons, "createdRow":rr_function, "configtab":config.tab, "sScrollX": "100%", "sScrollXInner": "100%",drawCallback:(config.map?function(a){update_map(a,this.api(),config)}:null)} );
+			var myTable=$t.DataTable( {dom: config.tableconfig, data: rows, columns: cols, "scrollX": true, 
+				buttons:config.tablebuttons, 
+				"createdRow":rr_function, 
+				"configtab":config.tab, 
+				"sScrollX": "100%", 
+				"sScrollXInner": "100%",
+				drawCallback:(config.map?function(a){update_map(a,this.api(),config)}:null),
+				"order":(config.order?config.order:[[0, "desc"]])	}			);
 			myTable.on( 'draw.dt', function () {
 				// add the DO-NOT-PRINT class to all the modals, then remove from those that are still in the table
 				$('[id^=ModalCase]').addClass('DO-NOT-PRINT')
@@ -612,7 +628,7 @@
 					var t=$(this).data("target"); 
 					$(t).removeClass('DO-NOT-PRINT');
 				});
-				if(loadnotes()>0)
+				if(loadnotes()>0 && $(this).dataTable().columns)
 				{
 					$(this).dataTable().columns.adjust();	//fnAdjustColumnSizing(); 
 				}
@@ -1061,6 +1077,7 @@
 	
 	   if(!$.isEmptyObject(data.transformed.rows_data))
 	   {
+		   (config.nodata)?$('#'+config.nodata).hide().addClass('hidden'):void 0;
 			switch(config.type){
 				case "global":
 					draw_results_template(data,config);
@@ -1098,6 +1115,7 @@
 	   else
 	   {
 			$('#'+config.tab+' .spinnermsg').html('No data').show();
+			(config.nodata)?$('#'+config.nodata).show().removeClass('hidden'):void 0;
 	   }
 		$('#'+config.tab+' .spinner').hide();
 
