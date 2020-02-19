@@ -13,5 +13,5 @@ To get it working you will need to:
 3. Import the admin process. Use this to setup 'Profiles' that allow granular access to the data. You can pick one or more AD groups or individual users, choose a process, and choose which fields and rows of process data to be displayed. You can also set a 'retention policy' on the data to automatically *delete* data from the Data Dump after a period of time.
 4. Copy all the `Core-Pagebuilder` bits to Amazon S3, or some other internet-facing store. These files are referenced by the pagebuilder pages.
 5. Create a spinner image (at https://loading.io/) and save it to S3.
-6. Setup the pagebuilder pages. There are two - one that shows a list of processes and high-level stats, the other shows data and stats for a single process. Update the HTML content to reference your spinner image.
+6. Setup the pagebuilder pages. There are three - one that shows a list of processes and high-level stats, one shows data and stats for a single process. THe final page shows high level stats across all processes. Update the HTML content to reference your spinner image.
 
