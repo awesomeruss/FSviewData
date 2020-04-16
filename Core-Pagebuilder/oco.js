@@ -321,7 +321,7 @@
 			o=myShowdown.makeHtml(o);
 			if(o!=='')
 			{
-				var x = $(o);
+				var x = $('<span>'+o+'</span>');
 				$('a',x).attr('target','_blank');				
 				o=x.html(); //make all links open in a new tab 
 			}
