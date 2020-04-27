@@ -264,22 +264,30 @@
         // formats a column to be a hyperlink, using the url stored in column 0
         var caption=meta.settings.aoColumns[meta.col].title;
 		var style="";
-        if(caption=='view')
+		var target="_parent";
+        if(caption.toLowerCase()=='view')
 		{
 			caption='<i class="fas fa-eye"></i>'; //custom overrides to use fontawesome icons instead of boring words.
-			caption='<button type="button" class="btn btn-info btn-sm">View</button>'
+			caption='<button type="button" class="btn btn-info btn-sm"><i class="fas fa-eye"> </i>  View</button>'
 			style='font-size:150%';
 		}
-        if(caption=='edit')
+        if(caption.toLowerCase()=='edit')
 		{
 			// caption='<i class="fas fa-edit"></i>';
-			caption='<button type="button" class="btn btn-success btn-sm">Edit</button>'
+			caption='<button type="button" class="btn btn-success btn-sm"><i class="far fa-file-alt"> </i> Edit</button>'
 			style='font-size:150%';
 		}
+        if(caption.toLowerCase()=='new')
+		{
+			// caption='<i class="fas fa-plus-square"></i>';
+			caption='<button type="button" class="btn btn-success btn-sm"><i class="fas fa-plus-square"></i> New</button>'
+			style='font-size:150%';
+			target='_BLANK';
+		} 	
 		if(type === 'display' && (data===0 || data==='' || data ===null)) 
             return data
         else
-            return '<a target="_parent" title="'+meta.settings.aoColumns[meta.col].title+'"style="'+style+'" href="'+data+'">'+caption + '</a>'
+            return '<a title="'+meta.settings.aoColumns[meta.col].title+'"style="'+style+'" target="'+target+'" href="'+data+'">'+caption + '</a>'
     
     }
 	function render_response(data, type, row, meta) {
@@ -299,7 +307,7 @@
 			}
 			$('#ModalResponse'+ref+' .modal-body').html('<div class="htmlsummary">'+data+'</div>');
 
-			o='<button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#ModalResponse'+ref+'"> View</button>';
+			o='<button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#ModalResponse'+ref+'"><i class="fab fa-readme"> </i> Read</button>';
 		}
 		// console.log('rendering '+type+'-'+data +' as '+o);
 		return o;	   
@@ -322,7 +330,7 @@
 			if(o!=='')
 			{
 				var x = $('<span>'+o+'</span>');
-				$('a',x).attr('target','_blank');				
+				$('a:not(target)',x).attr('target','_blank');				
 				o=x.html(); //make all links open in a new tab 
 			}
 			//o='<small>'+$('<div>').text(o).html()+'</small>';
@@ -1014,6 +1022,71 @@
 	
 	}
 	
+	function postprocess(h) {
+		// takes a html string and returns a string following processing of momentfromnow, markdown and other directives specified in css classes
+		var x = jQuery.parseHTML(h);
+		
+		$(x).find('.momentfromnow').each(function(i,v){
+			var d=moment($(v).html(),['YYYY-MM-DD','DD/MM/YYYY HH:mm:ss'],true);
+			if(d.isValid()){
+				$(v).html(d.fromNow()).attr('title',d.format('LLLL')).removeClass('momentfromnow');
+			}
+			});
+		$(x).find('.momenttonow').each(function(i,v){
+			var d = moment($(v).html());
+			if(!d.isValid()) d=moment($(v).html(),'DD/MM/YYYY HH:mm:ss');
+			if(d.isValid())  $(v).html(d.toNow()).attr('title',d.format('LLLL')).removeClass('momenttonow')
+			});
+		$(x).find('.momentlocaldatetime').each(function(i,v){
+			var d = moment($(v).html());
+			if(!d.isValid()) d=moment($(v).html(),'DD/MM/YYYY HH:mm:ss');
+			if(d.isValid())  $(v).html(d.format('LLLL')).removeClass('momentlocaldatetime')
+			});					
+		$(x).find('.momentlocaldate').each(function(i,v){
+			var d = moment($(v).html());
+			if(!d.isValid()) d=moment($(v).html(),'DD/MM/YYYY HH:mm:ss');
+			if(d.isValid())  $(v).html(d.format('ddd D MMM YYYY')).removeClass('momentlocaldate')
+			});
+		$(x).find('.momentlocaldatenoyear').each(function(i,v){
+			var d = moment($(v).html());
+			if(!d.isValid()) d=moment($(v).html(),'DD/MM/YYYY HH:mm:ss');
+			if(d.isValid())  $(v).html(d.format('ddd D MMM')).removeClass('momentlocaldate')
+			});
+		// if there is a slick carousel, initialise it
+	//	if($(x,'.slickcarousel').length > 0)
+	//	{
+	//		// $(selector+'.slickcarousel').slick('unslick')
+	//		$(x,'.slickcarousel').slick();
+	//	}
+		// format money fields
+		$(x).find('.results .money').not(':contains(###)').each(function(i,v){$(v).text(Number($(v).text()).toLocaleString('en'))}).removeClass('money');
+		//if(typeof(config.sub)=='undefined')
+		//{
+			// add 'copy to clipboard' script to anything that has the copycursor class
+			$(x).find('.copycursor.unbound').not(':contains(###)').click(function(){copyToClipboard(this);}).removeClass('unbound');
+			// bind the hideswitch function to any controls that need it
+			$(x).find('.hideswitch.unbound').not(':contains(###)').click(function(){hideswitch(this);}).removeClass('unbound');
+			// bind the tablefilter function to any controls that need it
+			$(x).find('.tablefilter.unbound').not(':contains(###)').click(function(){tablefilter(this);}).removeClass('unbound');
+			// rewrite any markdown inside oco_country_list to include flags
+			$(x).find('div.oco_country_list.unbound table td:first-child').not(':contains(###)').each(function(){$(this).addClass('flag-icon-'+$(this).html().substring(0,2));$(this).html($(this).html().slice(2));});
+			$(x).find('div.oco_country_list.unbound').not(':contains(###)').removeClass('unbound');
+		//}
+		var myShowdown = new showdown.Converter({tables: true, strikethrough: true}); 			
+		$(x).find('.newmarkdown').each(function(i,v){
+			
+			o=myShowdown.makeHtml($(v).html());
+			if(o!=='')
+			{
+				var xx = $('<span>'+o+'</span>');
+				$('a:not(target)',x).attr('target','_blank');				
+				o=xx.html(); //make all links open in a new tab 
+			}
+			$(v).html(o).removeClass('newmarkdown')			
+		});
+		
+		return $(x).html();
+	}
     function update_map(settings,api,config){
         console.log('update map');
 		
@@ -1056,6 +1129,8 @@
 							loc.html=loc.html+'<br/><b>'+c+'</b>: '+data[i];
 						});
 					}
+					// do postprocssing on loc to handle markdown, momentfromnow, etc
+				   loc.html=postprocess(loc.html);
 				   markers.locations.push(loc); 
                    var row = this.node();
                     // Hack that adds a class with the row number to the tr (using rowLoop since that's the "natural"
