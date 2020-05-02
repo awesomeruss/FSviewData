@@ -5,7 +5,11 @@
 - then paste in the HTML using the Tools>Source Code menu
 ```
 <div style="padding: 4px;">
-   <div id="lookup_config" class="config">[ {"type":"table", "lookup":"5a993d324b636","tab":"data", "tablebuttons":["csv"], "tableconfig":"frlipBt"}, {"type":"table", "lookup":"5d2c8a94e3595","tab":"stats", "tablebuttons":["csv"], "tableconfig":"frlipBt"}, { "type": "selectlist", "lookup": "5d2d93796eb7b", "tab": "quarter" } ]</div>
+   <div id="lookup_config" class="config">[ 
+		{"type":"table", "lookup":"5a993d324b636","tab":"data", "nodata":"data_nodata", "tablebuttons":["csv"], "tableconfig":"frlipBt"}, 
+		{"type":"table", "lookup":"5d2c8a94e3595","tab":"stats", "nodata":"stats_nodata", "tablebuttons":["csv"], "tableconfig":"frlipBt"}, 
+		{ "type": "selectlist", "lookup": "5d2d93796eb7b", "tab": "quarter" } 
+		]</div>
    <div id="quarter" class="config"></div>
    <div class="viewdata oco_pagebuilder">
       <div>
@@ -20,6 +24,9 @@
       </ul>
       <div id="myTabContent" class="tab-content">
          <div id="data" class="tab-pane fade in active">
+			<div id="data_nodata" class="hidden">
+				No matching records - try adjusting your criteria
+			</div>
             <div class="spinner">
                <img src="https://fs-filestore-eu.s3.amazonaws.com/crawley/resources/spinner.svg" />
                <div class="msg">Loading...</div>
@@ -37,6 +44,9 @@
                </div>
             </div>
             <div id="stats">
+				<div id="stats_nodata" class="hidden">
+					No matching records - try adjusting your criteria
+				</div>
                <div class="spinner">
                   <img src="https://fs-filestore-eu.s3.amazonaws.com/crawley/resources/spinner.svg" />
                   <div class="msg">Loading...</div>

@@ -1,8 +1,8 @@
 .hideuntilglobal, .hidewhenblank:empty, .showwhentrue_false, .hidewhentrue_true, .hidewhenfalse_false {visibility:hidden; display:none}
-.spinner img { width: 70px;}
 
 /* hide datatables filter controls until hovering, to keep column headings small */
 /* .yadcf-filter-wrapper {display:none !important }
+ .spinner img { width: 70px;}
 div.shown, th:hover  div.yadcf-filter-wrapper, div.yadcf-filter-wrapper:focus , div.yadcf-filter-wrapper:hover {
   display: block !important;
 }

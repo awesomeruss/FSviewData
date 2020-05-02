@@ -711,6 +711,19 @@
 		$dropdown.val(x);
 	}
 	
+	function draw_results_buttons(data,config) {
+		// put name and display into a bootstrap button list
+		//var $dropdown = $('select#'+config.tab);
+		//var x= $('#'+config.tab).text();
+		////$dropdown.val();
+		//$dropdown.find('option').remove().end()
+		//$.each(data.transformed.rows_data, function() {
+		//	$dropdown.append($("<option />").val(this.name).text(this.display));
+		//});
+		//$dropdown.val(x);
+		console.log('Adding button for '+this.name+' ('+this.display+')');
+	}
+	
 	function draw_results_template(data,config) {
 		// search+replace here
 		var myShowdown = new showdown.Converter({tables: true, strikethrough: true}); 
@@ -1197,6 +1210,9 @@
 					break;
 				case "selectlist":
 					draw_results_list(data,config);
+					break;
+				case "buttons":
+					draw_results_buttons(data,config);
 					break;
 				case "plotly":
 					draw_results_plotly(data,config);

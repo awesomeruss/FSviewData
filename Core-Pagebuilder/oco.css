@@ -6,12 +6,76 @@
 @import url('currency.css');
 @import url('arrowsteps.css');
 
+/* Spinner overlay style */
+.spinner {
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  z-index: 5;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.18);
+  overflow-x: hidden;
+  transition: 0.5s;
+}
+.spinner img {
+  position: relative;
+  top: 25%;
+  margin-left:25%;
+  width: 50%;
+  height:50%;
+  text-align: center;
+  margin-top: 30px;
+  background-color:#fff;
+  border-top-right-radius:30px;
+  border-top-left-radius:30px;
+}
+.spinnermsg, .spinner .msg {
+  background-color:#fff;
+  width:50%;
+  margin-left:25%;
+  padding:5%;
+  border:10px;   
+  border-bottom-right-radius:30px;
+  border-bottom-left-radius:30px;
+  text-align: center;
+}
+
 /* BOOTSTRAP STUFF */
 /* remove bootstrap gutters to make alignment easier */
 .oco_pagebuilder .nopadding {
     padding-left: 0;
     padding-right: 0;
 }
+
+/* button array styles */
+.btn-cbcorange{
+	color:#fff;
+	border-color:#cc6633;
+}
+.btn-cbcorange:hover, .btn-cbcorange:focus, .btn-cbcorange:active,.btn-cbcorange.active, .open>.dropdown-toggle.btn-cbcorange {
+	color:#fff;
+	background-color:#cc6633;
+	border-color:#974821;
+}
+
+
+.buttonpusher.btn-cbcorange:not(.active):not(:hover) {
+    background-color: transparent;
+    color: #cc6633;
+}
+
+.buttonpusher.btn-warning:not(.active):not(:hover) {
+    background-color: transparent;
+    color: #ec971f;
+}
+.buttonpusher.btn-info:not(.active):not(:hover) {
+    background-color: transparent;
+    color: #269abc;
+}
+a.buttonpusher.btn {margin:1px}
+
 
 /* remove excess whitespace around paragraphs */
 .oco_pagebuilder p {margin:0}

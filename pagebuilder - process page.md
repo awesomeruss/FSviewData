@@ -5,7 +5,21 @@
 - then paste in the HTML using the Tools>Source Code menu
 ```
 <div style="padding: 4px;">
-   <div id="lookup_config" class="config">[ { "type": "table", "lookup": "5aa8f60a99314", "tab": "data", "tablebuttons": [ "csv" ], "map": "mapdaddy", "tableconfig": "frlipBt" }, { "type": "plotly", "graph": "violin", "lookup": "5a7acb84ab7cb", "tab": "plotly_violin", "plotly_layout": { "title": "Stage timings", "yaxis": { "title": "Working hours open" }, "xaxis": { "visible": "false" } } }, { "type": "plotly", "graph": "bar", "lookup": "5bd72a50d3975", "tab": "plotly_bar", "plotly_layout": { "title": "Opened/Closed cases", "barmode": "group", "xaxis": { "tickangle": "-45" } } }, { "type": "selectlist", "lookup": "5ad6d991e80c0", "tab": "breakdown" }, { "type": "plotly", "graph": "generic", "plotly_tracedata": { "stackgroup": "scatter" }, "lookup": "5c2e2882a6096", "tab": "plotly_genericbar", "plotly_layout": { "title": "Closed cases breakdown", "barmode": "stack", "xaxis": { "tickangle": "-45", "rangeslider": {}, "rangeselector": { "buttons": [ { "count": 1, "label": "1m", "step": "month", "stepmode": "backward" }, { "count": 3, "label": "3m", "step": "month", "stepmode": "backward" }, { "count": 6, "label": "6m", "step": "month", "stepmode": "backward" }, { "step": "all" } ] } } } }, { "type": "plotly", "graph": "pie", "plotly_tracedata": { "type": "pie","sort":false,"direction":"clockwise" }, "lookup": "5c2f42fa67d22", "tab": "plotly_genericpie", "plotly_layout": { "title": "Total over period" } } ]</div>
+   <div id="lookup_config" class="config">[ 
+		{ "type": "table", "lookup": "5aa8f60a99314", "tab": "data","nodata":"data_nodata", "tablebuttons": [ "csv" ], "map": "mapdaddy", "tableconfig": "frlipBt" }, 
+		{ "type": "plotly", "graph": "violin", "lookup": "5a7acb84ab7cb", "tab": "plotly_violin", "plotly_layout": { "title": "Stage timings", "yaxis": { "title": "Working hours open" }, "xaxis": { "visible": "false" } } }, 
+		{ "type": "plotly", "graph": "bar", "lookup": "5bd72a50d3975", "tab": "plotly_bar", "plotly_layout": { "title": "Opened/Closed cases", "barmode": "group", "xaxis": { "tickangle": "-45" } } }, 
+		{ "type": "selectlist", "lookup": "5ad6d991e80c0", "tab": "breakdown" }, 
+		{ "type": "plotly", "graph": "generic", "plotly_tracedata": { "stackgroup": "scatter" }, "lookup": "5c2e2882a6096", "tab": "plotly_genericbar", 
+			"plotly_layout": { "title": "Closed cases breakdown", "barmode": "stack",
+				"xaxis": { "tickangle": "-45", "rangeslider": {},
+					"rangeselector": { "buttons": [
+						{ "count": 1, "label": "1m", "step": "month", "stepmode": "backward" }, 
+						{ "count": 3, "label": "3m", "step": "month", "stepmode": "backward" }, 
+						{ "count": 6, "label": "6m", "step": "month", "stepmode": "backward" }, 
+						{ "step": "all" } ] } } } }, 
+		{ "type": "plotly", "graph": "pie", "plotly_tracedata": { "type": "pie","sort":false,"direction":"clockwise" }, "lookup": "5c2f42fa67d22", "tab": "plotly_genericpie", "plotly_layout": { "title": "Total over period" } }
+		]</div>
    <div id="profileid" class="config">0{profileid}</div>
    <div id="process_tablename" class="config">{process_tablename}</div>
    <div id="daterangestart" class="config">2018-01-01</div>
@@ -28,6 +42,9 @@
    </ul>
    <div id="myTabContent" class="tab-content">
       <div id="data" class="tab-pane fade  active in">
+		 <div id="data_nodata" class="hidden">
+			No matching records - try adjusting your criteria
+		 </div>
          <div class="spinner">
             <img src="https://fs-filestore-eu.s3.amazonaws.com/crawley/resources/spinner.svg" />
             <div class="msg">Loading...</div>
