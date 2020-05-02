@@ -40,7 +40,7 @@
             $('#console').append("Unable to find AchieveForms session id<br/>");
 			return;
         } 
-		var jsfolder=$('script[src$="oco.js"]').attr('src').replace('oco.js', '');
+		var jsfolder=$('script[src$="oco-beta.js"]').attr('src').replace('oco-beta.js', '');
 		$.ajaxSetup({cache: true});
 		$.when(
 			$.getScript(jsfolder+'moment/moment.min.js'),
@@ -128,6 +128,7 @@
 				//bind the print button
 				//$('#printhelp div.unbound').on('click', function(){togglePrint();}).removeClass("unbound");
 				 $('body').on('change','.selectpicker',function(){ picklist(this)   }); // better way of binding events to controls 
+				 $('body').on('click','a.buttonpusher.selectall',function(){ allbuttonpush(this)   }); // better way of binding events to controls 
 				setTimeout(function(){
 					console.log('binding');
 					console.log($('#printhelp div.newprintmode'));
@@ -148,12 +149,44 @@
 	});
 
 	function refreshLookups(){
+		$('.modal').remove(); //prevent build up of out-of-date modals
+		$('.nodatamsg').hide(); //hide any visible 'no data' messages
 		var ocotabs=JSON.parse($('#lookup_config').text());
 		for (var i=0; i < ocotabs.length; i++)
 		{
 			get_data(ocotabs[i]);
 		}
 		
+	}
+	
+	function buttonpush(field){
+		//did we push or unpush?
+		console.log('pushed!');
+		console.log(field.text);
+		console.log(field.value);
+		var c = $('#'+field.getAttribute('config')+'.config');
+		var selected=c.html().split(',');
+		console.log('selected was '+selected.toString());
+		if($(field).hasClass('active'))
+		{
+			//remove element from array
+			selected.splice(selected.indexOf(field.value),1);
+			//unselect the select-all button, if it exists			
+			$(field).parent().find('.selectall').removeClass('active');
+		}
+		else
+		{
+			selected.push(field.value);
+		}
+		c.html(selected.toString());
+		console.log('selected is now '+selected.toString());	
+	}
+	
+	// any 'select all' buttons will be bound to this function
+	function allbuttonpush(field){
+		$(field).addClass('active');
+		$(field).parent().find('a:not(.active)').each(function(){buttonpush(this)}).addClass('active');
+		refreshLookups();		
 	}
 	
 	function picklist(field){
@@ -224,8 +257,9 @@
 		if((typeof parent.FS.Auth.session.user =='undefined')&&($('#ucrn.config').length==0 || $('#ucrn.config').html().replace(/&nbsp;$/, '') !=''))
 		{
 			$('#'+x.tab+' .spinner').show();
-			var uri=parent.window.location.origin+'/login/?return_url='+encodeURIComponent(parent.window.location.pathname+parent.window.location.search+parent.window.location.hash);
+			//var uri=parent.window.location.origin+'/login/?return_url='+encodeURIComponent(parent.window.location.pathname+parent.window.location.search+parent.window.location.hash);
 			$('#'+x.tab+' .spinner .msg').html('User details not found. Please refresh, or click "Home" and then the browser "Back" button, or <a href="'+uri+'" target="_parent">log in</a>.').show();
+			parent.location.reload();
 			// https://crawleybc-dash.achieveservice.com/login/?support&return_url=http%3A%2F%2Fcrawleybc-dash.achieveservice.com%2Fdata
 			return;
 		}
@@ -273,6 +307,10 @@
 		}
         if(caption.toLowerCase()=='edit')
 		{
+			if(caption=='EDIT') // it's a bit hacky, but EDIT_url will open a new tab, edit_url will target the iframe parent in this tab
+			{
+				target="_BLANK";
+			}
 			// caption='<i class="fas fa-edit"></i>';
 			caption='<button type="button" class="btn btn-success btn-sm"><i class="far fa-file-alt"> </i> Edit</button>'
 			style='font-size:150%';
@@ -696,7 +734,8 @@
 		else
 		{
 			$('#'+config.tab+' .spinner').hide();
-			$('#'+config.tab+' .spinnermsg').html('No data').show();
+		//	$('#'+config.tab+' .spinnermsg').html('No data').show();
+		//	$('#'+config.tab+' .nodatamsg').show();
 		}
 	}
 	function draw_results_list(data,config) {
@@ -713,15 +752,16 @@
 	
 	function draw_results_buttons(data,config) {
 		// put name and display into a bootstrap button list
-		//var $dropdown = $('select#'+config.tab);
-		//var x= $('#'+config.tab).text();
-		////$dropdown.val();
-		//$dropdown.find('option').remove().end()
-		//$.each(data.transformed.rows_data, function() {
-		//	$dropdown.append($("<option />").val(this.name).text(this.display));
-		//});
-		//$dropdown.val(x);
-		console.log('Adding button for '+this.name+' ('+this.display+')');
+		var $buttonbox = $('#'+config.tab);
+		var selected= $('#'+config.variable).text(); //data must be comma separated list of selected buttons - NO SPACES
+		$buttonbox.find('a:not(.selectall)').remove().end(); //remove existing buttons
+		$.each(data.transformed.rows_data, function() {
+			//if this.name is present within selected, set the button to be active
+			var active= selected.split(',').includes(this.name);
+			 
+			$buttonbox.append($('<a role="button" class="buttonpusher" type="button" data-toggle="button" />').val(this.name).text(this.display).addClass(config.class+' '+(active?' active':'')).attr('config',config.variable).attr('aria-pressed',active.toString()).click(function(){buttonpush(this);refreshLookups();	}));
+		});
+		// 
 	}
 	
 	function draw_results_template(data,config) {
@@ -1030,7 +1070,7 @@
 			Plotly.newPlot(config.tab, linedata, layout,{responsive: true});
 			break;
 		default:
-			$('#'+config.tab+' .spinnermsg').html('Invalid plotly graph type: '+config.graph).show();
+			$('#'+config.tab+' .spinner .msg').html('Invalid plotly graph type: '+config.graph).show();
 		}
 	
 	}
@@ -1218,7 +1258,7 @@
 					draw_results_plotly(data,config);
 					break;
 				default:
-					$('#'+config.tab+' .spinnermsg').html('Invalid configuration template - '+config.type).show();
+					$('#'+config.tab+' .spinner .msg').html('Invalid configuration template - '+config.type).show();
 			}
 			if(typeof(config.sub)=='object')
 			{
@@ -1237,8 +1277,9 @@
 	   }
 	   else
 	   {
-			$('#'+config.tab+' .spinnermsg').html('No data').show();
+			$('#'+config.tab+' .spinner .msg').html('No data').show();
 			(config.nodata)?$('#'+config.nodata).show().removeClass('hidden'):void 0;
+			(config.map)?$('#'+config.map).hide():void 0;
 	   }
 		$('#'+config.tab+' .spinner').hide();
 
