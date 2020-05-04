@@ -161,12 +161,8 @@
 	
 	function buttonpush(field){
 		//did we push or unpush?
-		console.log('pushed!');
-		console.log(field.text);
-		console.log(field.value);
 		var c = $('#'+field.getAttribute('config')+'.config');
 		var selected=c.html().split(',');
-		console.log('selected was '+selected.toString());
 		if($(field).hasClass('active'))
 		{
 			//remove element from array
@@ -179,7 +175,6 @@
 			selected.push(field.value);
 		}
 		c.html(selected.toString());
-		console.log('selected is now '+selected.toString());	
 	}
 	
 	// any 'select all' buttons will be bound to this function
@@ -190,9 +185,6 @@
 	}
 	
 	function picklist(field){
-		console.log('picked!');
-		console.log(field.id);
-		console.log(field.value);
 		$('#'+field.id+'.config').html(field.value);
 		refreshLookups();
 	}
@@ -258,7 +250,7 @@
 		{
 			$('#'+x.tab+' .spinner').show();
 			//var uri=parent.window.location.origin+'/login/?return_url='+encodeURIComponent(parent.window.location.pathname+parent.window.location.search+parent.window.location.hash);
-			$('#'+x.tab+' .spinner .msg').html('User details not found. Please refresh, or click "Home" and then the browser "Back" button, or <a href="'+uri+'" target="_parent">log in</a>.').show();
+			//$('#'+x.tab+' .spinner .msg').html('User details not found. Please refresh, or click "Home" and then the browser "Back" button, or <a href="'+uri+'" target="_parent">log in</a>.').show();
 			parent.location.reload();
 			// https://crawleybc-dash.achieveservice.com/login/?support&return_url=http%3A%2F%2Fcrawleybc-dash.achieveservice.com%2Fdata
 			return;
