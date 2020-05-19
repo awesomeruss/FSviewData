@@ -285,11 +285,11 @@ where a.type='u' and a.name like 'process%' and (b.type is null or (b.type='u' a
 GO
 CREATE view [dbo].[v_metadata_stat_quarter] as
 select concat(datepart(yy,week_commencing),' Q',datepart(qq,week_commencing)) as quarter,
-  table_name, profile_id
+  table_name, profile_id,
   sum(creation_count) as created,
   sum(self_count) as self,
   sum(dash_count) as dash,
-  sum(servie_count) as service,
+  sum(service_count) as service,
   sum(forms_count) as forms,
   sum(other_count) as other
 from metadata_stat group by table_name, profile_id, concat(datepart(yy,week_commencing),' Q',datepart(qq,week_commencing)) 

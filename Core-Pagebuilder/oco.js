@@ -40,7 +40,7 @@
             $('#console').append("Unable to find AchieveForms session id<br/>");
 			return;
         } 
-		var jsfolder=$('script[src$="oco-beta.js"]').attr('src').replace('oco-beta.js', '');
+		var jsfolder=$('script[src$="oco.js"]').attr('src').replace('oco.js', '');
 		$.ajaxSetup({cache: true});
 		$.when(
 			$.getScript(jsfolder+'moment/moment.min.js'),
