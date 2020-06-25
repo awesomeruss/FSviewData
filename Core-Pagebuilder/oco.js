@@ -28,10 +28,27 @@
 	//		it manipulates the results into the format required by datatables, creates the datatable and hides the spinner
     
 	var maplace;
+	
+	//setup a function that loads a single script
+	function load_a_script(scripts) {
+	
+		//make sure the current index is still a part of the array
+		if (scripts.length>0) {
+			var myscript=scripts.pop();
+			console.log('Loading: ' + myscript);
+			$.getScript(myscript, function () {
+				console.log('Loaded: ' + myscript);
+				if(scripts.length>0)
+					load_a_script(scripts);
+				else
+					start();
+			});
+		}
+	}
+	
 
     $( document ).ready(function() {
-        // $('.hideswitch.unbound').click(function(){hideswitch(this);}).removeClass('unbound');    
-        // setup datatables for sorting date columns properly
+		// load the scripts we need
 		if($('#pagetitle').text()!=='') window.parent.document.title=$('#pagetitle').text();
 		
         var sid;
@@ -39,25 +56,311 @@
         {
             $('#console').append("Unable to find AchieveForms session id<br/>");
 			return;
-        } 
+		} 
+		//load the 'type' values from the config, to check what scripts we need
+		var config=JSON.parse($('#lookup_config').text());
+		var types=config.map(x => x.type);
+		
+				
+		//load all the scripts we need
+		var scripts=[];
 		var jsfolder=$('script[src$="oco.js"]').attr('src').replace('oco.js', '');
+		if (jsfolder=='')
+		{
+			jsfolder=$('script[src$="oco-beta.js"]').attr('src').replace('oco-beta.js', '');
+		}
+		if (jsfolder=='')
+		{
+			jsfolder=$('script[src$="oco.min.js"]').attr('src').replace('oco.min.js', '');
+		}
 		$.ajaxSetup({cache: true});
+
+		scripts.push(jsfolder+'moment/moment.min.js');
+		scripts.push(jsfolder+'showdown/showdown.min.js');
+		if(types.includes('calendar'))
+		{
+			// load some css
+			$('<link/>', {rel: 'stylesheet', type: 'text/css', href: jsfolder+'fullcal/scheduler/packages/core/main.css'}).appendTo('head');	
+			$('<link/>', {rel: 'stylesheet', type: 'text/css', href: jsfolder+'fullcal/scheduler/packages/daygrid/main.css'}).appendTo('head');	
+			$('<link/>', {rel: 'stylesheet', type: 'text/css', href: jsfolder+'fullcal/scheduler/packages/timegrid/main.css'}).appendTo('head');		
+			$('<link/>', {rel: 'stylesheet', type: 'text/css', href: jsfolder+'fullcal/scheduler/packages-premium/timeline/main.css'}).appendTo('head');		
+			$('<link/>', {rel: 'stylesheet', type: 'text/css', href: jsfolder+'fullcal/scheduler/packages-premium/resource-timeline/main.css'}).appendTo('head');
+			scripts.push(jsfolder+ "fullcal/scheduler/packages/core/main.js");
+			scripts.push(jsfolder+ "fullcal/scheduler/packages/interaction/main.js");
+			scripts.push(jsfolder+ "fullcal/scheduler/packages/daygrid/main.js");
+			scripts.push(jsfolder+ "fullcal/scheduler/packages/timegrid/main.js");
+			scripts.push(jsfolder+ "fullcal/scheduler/packages-premium/timeline/main.js");
+			scripts.push(jsfolder+ "fullcal/scheduler/packages-premium/resource-common/main.js");
+			scripts.push(jsfolder+ "fullcal/scheduler/packages-premium/resource-timeline/main.js");		
+		}
+		if(types.includes('plotly'))
+		{
+			scripts.push(jsfolder+'plotly/plotly-latest.min.js');
+		//	scripts.push(jsfolder+'plotly/plotly-finance-latest.js');
+		//	scripts.push(jsfolder+'plotly/plotly-cartesian-latest.js');		
+		}
+		if(types.includes('table'))
+		{
+			scripts.push(jsfolder+'datatables/datatables.min.js');
+			scripts.push(jsfolder+'datatables/datetime-moment.js');
+			scripts.push(jsfolder+'datatables/select2.min.js');
+			scripts.push(jsfolder+'datatables/ellipsis.js');
+			scripts.push(jsfolder+'datatables/jquery.dataTables.yadcf.js');			
+		}
+		scripts.push(jsfolder+'maplace/maplace.min.js');
+		scripts.push(jsfolder+'daterangepicker/daterangepicker.js');
+		console.log('loading scripts');
+		load_a_script(scripts.reverse())
+	});
+	
+	function start()
+	{
+		var config=JSON.parse($('#lookup_config').text());
+		var types=config.map(x => x.type);
+
+		console.log('all scripts loaded.');
+		// setup datatables for sorting date columns properly
+		if(types.includes('table'))
+		{
+			$.fn.dataTable.moment( 'DD/MM/YYYY' );
+			$.fn.dataTable.moment( 'YYYY-MM-DD' );
+			$.fn.dataTable.moment( 'DD MMM YYYY' );
+			$.fn.dataTable.moment( 'DD/MM/YYYY HH:mm:ss' );
+		}
+		//if we have a graph, bind a resize event
+		if(types.includes('plotly'))
+		{
+			window.onresize = function() {
+					// todo - change this for a jquery each()
+					Plotly.Plots.resize('plotly_box');
+					Plotly.Plots.resize('plotly_violin');    
+				}
+		};
+		//setup date range picker if available
+		$('#daterangestart').html(moment().subtract(30,'days').format('YYYY-MM-DD'));
+		$('#daterangeend').html(moment().format('YYYY-MM-DD'));
+
+		$('input[name="daterange"]').val( moment().subtract(30,'days').format('DD MMM YYYY HH:mm')+' - '+ moment().format('DD MMM YYYY HH:mm'));
+		$('input[name="daterange"]').daterangepicker({
+			
+			timePicker: true,
+			timePicker24Hour: true,
+			timePickerIncrement: 1,
+			locale: {format: 'DD MMM YYYY HH:mm',  cancelLabel: 'Clear (Show open cases)'},
+			showCustomRangeLabel:true,
+			ranges: {
+				"Last 24h": [
+					moment().subtract(1,'days').format('DD MMM YYYY HH:mm'),
+					moment().format('DD MMM YYYY HH:mm')
+				],
+				"Last 7 days": [
+					moment().subtract(7,'days').format('DD MMM YYYY HH:mm'),
+					moment().format('DD MMM YYYY HH:mm')
+				],
+				"Last 30 days": [
+					moment().subtract(30,'days').format('DD MMM YYYY HH:mm'),
+					moment().format('DD MMM YYYY HH:mm')
+				],
+				"Last month": [
+					moment().subtract(moment().date()-1,'days').subtract(1,'month').format('DD MMM YYYY 00:00'),
+					moment().subtract(moment().date()-1,'days').format('DD MMM YYYY 00:00')
+				],
+				"Last quarter": [
+					moment().startOf('quarter').subtract(3,'month').format('DD MMM YYYY 00:00'),
+					moment().startOf('quarter').format('DD MMM YYYY 00:00')
+				]
+				}
+	
+			},pickdate);
+			$('input[name="daterange"]').on('cancel.daterangepicker', function(ev, picker) {
+				$(this).val('');
+				$('#daterangestart').html('');
+				$('#daterangeend').html('');
+				refreshLookups();
+			});
+		
+		//bind the print button
+		//$('#printhelp div.unbound').on('click', function(){togglePrint();}).removeClass("unbound");
+		 $('body').on('change','.selectpicker',function(){ picklist(this)   }); // better way of binding events to controls 
+		 $('body').on('click','a.buttonpusher.selectall',function(){ allbuttonpush(this)   }); // better way of binding events to controls 
+		setTimeout(function(){
+			console.log('binding');
+			console.log($('#printhelp div.newprintmode'));
+			$('.print.unbound').on('click', function(){window.print();}).removeClass("unbound");
+			$('#printhelp div.newprintmode').on('click', function(){togglePrint();}).removeClass("newprintmode").addClass("printmode");
+		//	$('.newselectpicker').on('change',function(){picklist(this)}).removeClass('newselectpicker').addClass('selectpicker');
+			$('.newselectpicker').removeClass('newselectpicker').addClass('selectpicker');
+			},3000);
+		//bind calendar events
+		for (var i=0; i < config.length; i++)
+		{
+			if(config[i].type='calendar')
+			{
+				setupCalendar(config[i]);
+			}
+		}
+
+		//run the lookups
+		refreshLookups();
+		// bind events to redraw plotly graphs when tabs are changed
+		$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) { 
+			$(e.target.hash+' .js-plotly-plot').each(function(){console.log(this.id);Plotly.relayout(this.id,{}) })
+			})
+	
+	}
+	
+	function check_calendar_save(responsedata, revertfunction, successfunction){
+		//if there is an error response or an error message in the data, call the revert function. otherwise call the successfunction
+		console.log('checking save response...');
+		console.log(responsedata);
+		var error = (responsedata.transformed.error?responsedata.transformed.error:'');
+		if(error == '' && responsedata.transformed.rows_data[0] && responsedata.transformed.rows_data[0].error){
+			error=responsedata.transformed.rows_data[0].error;
+		}
+		if(error)
+		{
+			revertfunction(responsedata);
+			alert(error);
+		}
+		else
+			(successfunction?successfunction(responsedata):void 0);
+		
+		//if the event was passed in, then we're adding a new event. we need to change the ID from the one assigned by fullcalendar to the one the back end understands
+	//	if(e && responsedata.transformed.rows_data[0] && responsedata.transformed.rows_data[0].eventID ){
+	//		event.setProp('id',responsedata.transformed.rows_data[0].eventID);
+	//	}
+		return;
+	}
+	
+	function setupCalendar(configitem){
+		var calendarEl = $('#'+configitem.tab+' .fullcalendar')[0];
+		var trashEl = $('#'+configitem.tab+' .trashcan')[0];
+		
+		
+		
+		if (typeof(calendarEl)!='undefined'){	 
+			var calendarObj = configitem.fullcalendar;
+			//some event feed adding goes here to map the integrations to functions in calendarObj
+			if(typeof(configitem.lookup_event) != 'undefined')
+			{
+				calendarObj.events=  function(info, successCallback, failureCallback) {
+				//	$(info.event._calendar.el).parent().find('.status').html('Loading events...')
+					run_lookup(configitem.lookup_event,get_config(info), function(responsedata){
+						successCallback(Object.values(responsedata.transformed.rows_data));
+				//		$(info.event._calendar.el).parent().find('.status').html('Ready');
+						}, failureCallback );
+				};
+			}
+			if(typeof(configitem.lookup_resources) != 'undefined')
+			{
+				calendarObj.resources=  function(info, successCallback, failureCallback) {
+					run_lookup(configitem.lookup_resources,get_config(info), function(responsedata){successCallback(Object.values(responsedata.transformed.rows_data))}, failureCallback );
+				};
+			}
+			if(typeof(configitem.lookup_eventchange) != 'undefined')
+			{
+				calendarObj.eventDrop=  function(info) {
+					console.log('saving eventDrop or eventResize change');
+					$(info.event._calendar.el).parent().find('.status').html('Saving...')
+					//all we need is - event id, old resource id, new resource id, new start, new end
+					var d={ eventID:info.event.id, start:info.event.start, end: info.event.end, oldResource:(info.oldResource?info.oldResource.id:null), newResource:(info.newResource?info.newResource.id:null)};
+					//need to run the lookup, on failure call revert, on success call a function to check result and revert if not ok 
+					run_lookup(configitem.lookup_eventchange,get_config(d), function(responsedata){
+						check_calendar_save(responsedata,function(){info.revert()});
+						$(info.event._calendar.el).parent().find('.status').html('Ready');
+						}, function(){info.revert() });
+				};
+				calendarObj.eventResize=  calendarObj.eventDrop;
+			}
+
+			if($('#'+configitem.tab+' .trashcan').length=1 && configitem.lookup_eventdelete)
+			{
+				//add a delete handler for dragging onto the trashcan
+				calendarObj.eventDragStop= function(info) {
+
+					var trashEl = $('#'+configitem.tab+' .trashcan');
+					var ofs = trashEl.offset();
+
+					var x1 = ofs.left;
+					var x2 = ofs.left + trashEl.outerWidth(true);
+					var y1 = ofs.top;
+					var y2 = ofs.top + trashEl.outerHeight(true);
+
+					if (info.jsEvent.pageX >= x1 && info.jsEvent.pageX<= x2 &&
+						info.jsEvent.pageY >= y1 && info.jsEvent.pageY <= y2) {
+						var d={ eventID:info.event.id};
+						$(info.event._calendar.el).parent().find('.status').html('Deleting...')
+
+						//run lookup to delete the event. only actually delete if it succeeds 
+						run_lookup(configitem.lookup_eventdelete,get_config(d), function(responsedata){
+							check_calendar_save(responsedata,
+								function(){return 0},
+								function(args){info.event.remove();$(info.event._calendar.el).parent().find('.status').html('Ready');})}, function(){return 0} );
+					
+					//info.event.remove();
+//						$('#'+configitem.tab+' .fullcalendar').fullCalendar('removeEvents', info.event.id);
+					}
+				};
+
+				
+			}
+			if(calendarObj.droppable)
+			{
+				calendarObj.eventReceive=function(info) {
+					var d={ eventID:info.event.id, start:info.event.start, end: info.event.end, title:info.event.title};
+					rs=info.event.getResources();
+					d.resourceId=(rs.length>0?rs[0].id:'');
+					run_lookup(configitem.lookup_eventreceive,get_config(d), function(responsedata){
+						check_calendar_save(responsedata,
+							function(){info.event.remove()},
+							function(args){ 
+								info.event.setProp('id',args.transformed.rows_data[0].eventID);
+								(args.transformed.rows_data[0].resourceId?info.event.setResources(args.transformed.rows_data[0].resourceId):void 0);
+								})}
+						, function(){info.event.remove()} );
+					
+				}
+			   var Draggable = FullCalendarInteraction.Draggable;
+
+				/* initialize the external events
+				-----------------------------------------------------------------*/
+
+				var containerEl = document.getElementById('external-events');
+				new Draggable(containerEl, {
+				  itemSelector: '.fc-event',
+				  eventData: function(eventEl) {
+					 
+					return (eventEl.getAttribute('data-event')?JSON.parse(eventEl.getAttribute('data-event')):{
+					  title: eventEl.innerText.trim()
+					})
+				  }
+				});
+			}
+			
+			//similarly for get resources, eventdrop, etc
+			var calendar = new FullCalendar.Calendar(calendarEl,calendarObj);
+			calendar.render();
+			$('#'+configitem.tab+' .spinner').hide();
+		}
+
+	}
+
+		function oldstuff(){
 		$.when(
 			$.getScript(jsfolder+'moment/moment.min.js'),
-			$.getScript(jsfolder+'datatables/datatables.min.js'),
-			$.getScript(jsfolder+'showdown/showdown.min.js'),
-			$.getScript(jsfolder+'plotly/plotly-latest.min.js'),
-			$.getScript(jsfolder+'maplace/maplace.min.js'),
 			$.Deferred(function(deferred){
 				$(deferred.resolve);
 			})
 		).done(function(){
 			$.when(
+				console.log('done loading scripts'),
 				$.getScript(jsfolder+'daterangepicker/daterangepicker.js'),
 				$.getScript(jsfolder+'datatables/datetime-moment.js'),
 				$.getScript(jsfolder+'datatables/select2.min.js'),
 				$.getScript(jsfolder+'datatables/ellipsis.js'),
 				$.getScript(jsfolder+'datatables/jquery.dataTables.yadcf.js'),
+				// calendar stuff
+				// this should really detect what is required. instead for right now we're just loading the css and js for the example
 				$.Deferred(function(deferred){
 					$(deferred.resolve);
 				})
@@ -67,7 +370,7 @@
 				$.fn.dataTable.moment( 'YYYY-MM-DD' );
 				$.fn.dataTable.moment( 'DD MMM YYYY' );
 				$.fn.dataTable.moment( 'DD/MM/YYYY HH:mm:ss' );
-
+				//plotly stuff
 				if(typeof(Plotly)=='undefined'&&$('#plotly').length>0)
 				{
 					$.getScript("/plotly/plotly-finance-latest.js",function() {
@@ -82,71 +385,10 @@
 					});
 				}
 				
-				//setup date range picker if available
-				$('#daterangestart').html(moment().subtract(30,'days').format('YYYY-MM-DD'));
-				$('#daterangeend').html(moment().format('YYYY-MM-DD'));
-
-				$('input[name="daterange"]').val( moment().subtract(30,'days').format('DD MMM YYYY HH:mm')+' - '+ moment().format('DD MMM YYYY HH:mm'));
-				$('input[name="daterange"]').daterangepicker({
-					
-					timePicker: true,
-					timePicker24Hour: true,
-					timePickerIncrement: 1,
-					locale: {format: 'DD MMM YYYY HH:mm',  cancelLabel: 'Clear (Show open cases)'},
-					showCustomRangeLabel:true,
-					ranges: {
-						"Last 24h": [
-							moment().subtract(1,'days').format('DD MMM YYYY HH:mm'),
-							moment().format('DD MMM YYYY HH:mm')
-						],
-						"Last 7 days": [
-							moment().subtract(7,'days').format('DD MMM YYYY HH:mm'),
-							moment().format('DD MMM YYYY HH:mm')
-						],
-						"Last 30 days": [
-							moment().subtract(30,'days').format('DD MMM YYYY HH:mm'),
-							moment().format('DD MMM YYYY HH:mm')
-						],
-						"Last month": [
-							moment().subtract(moment().date()-1,'days').subtract(1,'month').format('DD MMM YYYY 00:00'),
-							moment().subtract(moment().date()-1,'days').format('DD MMM YYYY 00:00')
-						],
-						"Last quarter": [
-							moment().startOf('quarter').subtract(3,'month').format('DD MMM YYYY 00:00'),
-							moment().startOf('quarter').format('DD MMM YYYY 00:00')
-						]
-						}
-			
-					},pickdate);
-					$('input[name="daterange"]').on('cancel.daterangepicker', function(ev, picker) {
-						$(this).val('');
-						$('#daterangestart').html('');
-						$('#daterangeend').html('');
-						refreshLookups();
-					});
-				
-				//bind the print button
-				//$('#printhelp div.unbound').on('click', function(){togglePrint();}).removeClass("unbound");
-				 $('body').on('change','.selectpicker',function(){ picklist(this)   }); // better way of binding events to controls 
-				 $('body').on('click','a.buttonpusher.selectall',function(){ allbuttonpush(this)   }); // better way of binding events to controls 
-				setTimeout(function(){
-					console.log('binding');
-					console.log($('#printhelp div.newprintmode'));
-					$('.print.unbound').on('click', function(){window.print();}).removeClass("unbound");
-					$('#printhelp div.newprintmode').on('click', function(){togglePrint();}).removeClass("newprintmode").addClass("printmode");
-				//	$('.newselectpicker').on('change',function(){picklist(this)}).removeClass('newselectpicker').addClass('selectpicker');
-					$('.newselectpicker').removeClass('newselectpicker').addClass('selectpicker');
-					},3000);
-				//run the lookups
-				refreshLookups();
-				// bind events to redraw plotly graphs when tabs are changed
-				$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) { 
-					$(e.target.hash+' .js-plotly-plot').each(function(){console.log(this.id);Plotly.relayout(this.id,{}) })
-					})
 			});	        
 		});	        
 		$.ajaxSetup({cache: false});
-	});
+	}
 
 	function refreshLookups(){
 		$('.modal').remove(); //prevent build up of out-of-date modals
@@ -154,7 +396,13 @@
 		var ocotabs=JSON.parse($('#lookup_config').text());
 		for (var i=0; i < ocotabs.length; i++)
 		{
-			get_data(ocotabs[i]);
+			if(ocotabs[i].type=='calendar')
+			{
+				// calendar.refreshEvents()
+			}
+			else
+				get_data(ocotabs[i]);
+			
 		}
 		
 	}
@@ -241,34 +489,18 @@
 		return $.map(rows,function(row) { return row[key]; });
 	}
 	
-	
-    function get_data(x, extraconfig) {		
+	function get_config(extraconfig){
+		//return a config object suitable for passing into run_lookup, merging the supplied extraconfig with other tokens from the page and user session
+	    var t={}; 
 		sid = typeof parent.FS !== "undefined" && parent.FS !== null ? (ref = parent.FS.Auth) !== null ? ref.session['auth-session'] : void 0 : void 0;
-		//$('#console').append("sid is "+sid+"<br/>");
-		// you could have a session but not be logged in, which should be allowable
 		if((typeof parent.FS.Auth.session.user =='undefined')&&($('#ucrn.config').length==0 || $('#ucrn.config').html().replace(/&nbsp;$/, '') !=''))
 		{
-			$('#'+x.tab+' .spinner').show();
-			//var uri=parent.window.location.origin+'/login/?return_url='+encodeURIComponent(parent.window.location.pathname+parent.window.location.search+parent.window.location.hash);
-			//$('#'+x.tab+' .spinner .msg').html('User details not found. Please refresh, or click "Home" and then the browser "Back" button, or <a href="'+uri+'" target="_parent">log in</a>.').show();
+			//reload the page if there is no sid
 			parent.location.reload();
-			// https://crawleybc-dash.achieveservice.com/login/?support&return_url=http%3A%2F%2Fcrawleybc-dash.achieveservice.com%2Fdata
 			return;
 		}
-		
-		
 		var e = typeof sid !== "undefined" ? typeof parent.FS.Auth.session.user  !== "undefined" && parent.FS.Auth.session.user !== null ? parent.FS.Auth.session.user.email : '' :  '';
 		var ucrn = typeof sid !== "undefined" ? typeof parent.FS.Auth.session.user  !== "undefined" && parent.FS.Auth.session.user !== null ? parent.FS.Auth.session.user.attributes.ucrn : '' :  '';
-			
-	
-		//bind the refresh button event
-		$('.'+x.tab+'.refreshbutton.unbound').on('click', function(){get_data(x);  $('i', this).rotate({ count:4, duration:0.6, easing:'ease-out' });}).removeClass("unbound");
-		// bind any unbound print mode buttons
-
-		var pt=$('#'+x.table).html()
-		if( typeof pt =='undefined') pt='';
-		// get an object of name/value config pairs
-	    var t={}; 
 	    if(typeof(extraconfig)=='object')
 		{
 			t=extraconfig;
@@ -279,6 +511,19 @@
 		t['Email_Address']=e;			
 		t['user_email']=e;
 		t['ucrn']=ucrn;
+		return(t);
+	}
+	
+    function get_data(x, extraconfig) {	
+		//run the lookup x with the config provided, and call draw_results with the results
+		//bind the refresh button event
+		$('.'+x.tab+'.refreshbutton.unbound').on('click', function(){get_data(x);  $('i', this).rotate({ count:4, duration:0.6, easing:'ease-out' });}).removeClass("unbound");
+		// bind any unbound print mode buttons
+
+		var pt=$('#'+x.table).html()
+		if( typeof pt =='undefined') pt='';
+		// get an object of name/value config pairs
+	    var t=get_config(extraconfig); 
 	//    console.log('running lookup...'+x.lookup+' for '+x.tab+' with data:');
 	//    console.log(t);
 		$('#'+x.tab+' .spinner').show();

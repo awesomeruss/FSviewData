@@ -64,7 +64,15 @@
 				
 		//load all the scripts we need
 		var scripts=[];
-		var jsfolder=$('script[src$="oco-beta.js"]').attr('src').replace('oco-beta.js', '');
+		var jsfolder=$('script[src$="oco.js"]').attr('src').replace('oco.js', '');
+		if (jsfolder=='')
+		{
+			jsfolder=$('script[src$="oco-beta.js"]').attr('src').replace('oco-beta.js', '');
+		}
+		if (jsfolder=='')
+		{
+			jsfolder=$('script[src$="oco.min.js"]').attr('src').replace('oco.min.js', '');
+		}
 		$.ajaxSetup({cache: true});
 
 		scripts.push(jsfolder+'moment/moment.min.js');
