@@ -201,8 +201,8 @@
 	
 	}
 	
-	function check_calendar_save(responsedata, revertfunction, successfunction){
-		//if there is an error response or an error message in the data, call the revert function. otherwise call the successfunction
+	function check_calendar_save(responsedata, revertfunction, e){
+		//if there is an 'ok' response in among the data, just return. otherwise call the revertfunction.
 		console.log('checking save response...');
 		console.log(responsedata);
 		var error = (responsedata.transformed.error?responsedata.transformed.error:'');
@@ -211,16 +211,13 @@
 		}
 		if(error)
 		{
-			revertfunction(responsedata);
+			(e?e.remove():revertfunction());
 			alert(error);
 		}
-		else
-			(successfunction?successfunction(responsedata):void 0);
-		
 		//if the event was passed in, then we're adding a new event. we need to change the ID from the one assigned by fullcalendar to the one the back end understands
-	//	if(e && responsedata.transformed.rows_data[0] && responsedata.transformed.rows_data[0].eventID ){
-	//		event.setProp('id',responsedata.transformed.rows_data[0].eventID);
-	//	}
+		if(e && responsedata.transformed.rows_data[0] && responsedata.transformed.rows_data[0].eventID ){
+			e.setProp('id',responsedata.transformed.rows_data[0].eventID);
+		}
 		return;
 	}
 	
@@ -236,11 +233,7 @@
 			if(typeof(configitem.lookup_event) != 'undefined')
 			{
 				calendarObj.events=  function(info, successCallback, failureCallback) {
-				//	$(info.event._calendar.el).parent().find('.status').html('Loading events...')
-					run_lookup(configitem.lookup_event,get_config(info), function(responsedata){
-						successCallback(Object.values(responsedata.transformed.rows_data));
-				//		$(info.event._calendar.el).parent().find('.status').html('Ready');
-						}, failureCallback );
+					run_lookup(configitem.lookup_event,get_config(info), function(responsedata){successCallback(Object.values(responsedata.transformed.rows_data))}, failureCallback );
 				};
 			}
 			if(typeof(configitem.lookup_resources) != 'undefined')
@@ -253,21 +246,16 @@
 			{
 				calendarObj.eventDrop=  function(info) {
 					console.log('saving eventDrop or eventResize change');
-					$(info.event._calendar.el).parent().find('.status').html('Saving...')
 					//all we need is - event id, old resource id, new resource id, new start, new end
 					var d={ eventID:info.event.id, start:info.event.start, end: info.event.end, oldResource:(info.oldResource?info.oldResource.id:null), newResource:(info.newResource?info.newResource.id:null)};
 					//need to run the lookup, on failure call revert, on success call a function to check result and revert if not ok 
-					run_lookup(configitem.lookup_eventchange,get_config(d), function(responsedata){
-						check_calendar_save(responsedata,function(){info.revert()});
-						$(info.event._calendar.el).parent().find('.status').html('Ready');
-						}, function(){info.revert() });
+					run_lookup(configitem.lookup_eventchange,get_config(d), function(responsedata){check_calendar_save(responsedata,info.revert)}, info.revert );
 				};
 				calendarObj.eventResize=  calendarObj.eventDrop;
 			}
 
-			if($('#'+configitem.tab+' .trashcan').length=1 && configitem.lookup_eventdelete)
+			if($('#'+configitem.tab+' .trashcan').length=1)
 			{
-				//add a delete handler for dragging onto the trashcan
 				calendarObj.eventDragStop= function(info) {
 
 					var trashEl = $('#'+configitem.tab+' .trashcan');
@@ -281,15 +269,9 @@
 					if (info.jsEvent.pageX >= x1 && info.jsEvent.pageX<= x2 &&
 						info.jsEvent.pageY >= y1 && info.jsEvent.pageY <= y2) {
 						var d={ eventID:info.event.id};
-						$(info.event._calendar.el).parent().find('.status').html('Deleting...')
-
-						//run lookup to delete the event. only actually delete if it succeeds 
-						run_lookup(configitem.lookup_eventdelete,get_config(d), function(responsedata){
-							check_calendar_save(responsedata,
-								function(){return 0},
-								function(args){info.event.remove();$(info.event._calendar.el).parent().find('.status').html('Ready');})}, function(){return 0} );
+						run_lookup(configitem.lookup_eventdelete,get_config(d), function(responsedata){check_calendar_save(responsedata,info.event.remove, info.event)}, function(){return 0} );
 					
-					//info.event.remove();
+					info.event.remove();
 //						$('#'+configitem.tab+' .fullcalendar').fullCalendar('removeEvents', info.event.id);
 					}
 				};
@@ -302,14 +284,7 @@
 					var d={ eventID:info.event.id, start:info.event.start, end: info.event.end, title:info.event.title};
 					rs=info.event.getResources();
 					d.resourceId=(rs.length>0?rs[0].id:'');
-					run_lookup(configitem.lookup_eventreceive,get_config(d), function(responsedata){
-						check_calendar_save(responsedata,
-							function(){info.event.remove()},
-							function(args){ 
-								info.event.setProp('id',args.transformed.rows_data[0].eventID);
-								(args.transformed.rows_data[0].resourceId?info.event.setResources(args.transformed.rows_data[0].resourceId):void 0);
-								})}
-						, function(){info.event.remove()} );
+					run_lookup(configitem.lookup_eventreceive,get_config(d), function(responsedata){check_calendar_save(responsedata,info.event.remove, info.event)}, info.event.remove );
 					
 				}
 			   var Draggable = FullCalendarInteraction.Draggable;
