@@ -6,6 +6,19 @@
 @import url('currency.css');
 @import url('arrowsteps.css');
 
+/* table row highlight for map clicks */
+div.results table.dataTable.display tbody tr.mapclicked td {
+	border-top: 4px #cc6633 solid;
+	border-bottom: 4px #cc6633 solid;
+}
+div.results table.dataTable.display tbody tr.mapclicked td:first-child {
+	border-left: 4px #cc6633 solid;
+}
+div.results table.dataTable.display tbody tr.mapclicked td:last-child {
+	border-right: 4px #cc6633 solid;
+}
+
+
 /* Spinner overlay style */
 .spinner {
   height: 100%;

@@ -28,6 +28,11 @@
 	//		it manipulates the results into the format required by datatables, creates the datatable and hides the spinner
     
 	var maplace;
+	function maplaceHiglightRow(index, location, marker) {
+		//highlight the corresponding row of the table
+		$('#'+marker.tableID+' .results tr').removeClass('mapclicked');
+		$('#'+marker.tableID+' .results tr.row-'+marker.rowID).addClass('mapclicked');
+	}
 	
 	//setup a function that loads a single script
 	function load_a_script(scripts) {
@@ -115,6 +120,15 @@
 	
 	function start()
 	{
+		sid = typeof parent.FS !== "undefined" && parent.FS !== null ? (ref = parent.FS.Auth) !== null ? ref.session['auth-session'] : void 0 : void 0;
+		if((typeof parent.FS.Auth.session.user =='undefined')&&($('#ucrn.config').length==0 || $('#ucrn.config').html().replace(/&nbsp;$/, '') !=''))
+		{
+			//reload the page if there is no sid
+			parent.location.reload();
+			return;
+		}
+
+		
 		var config=JSON.parse($('#lookup_config').text());
 		var types=config.map(x => x.type);
 
@@ -128,14 +142,15 @@
 			$.fn.dataTable.moment( 'DD/MM/YYYY HH:mm:ss' );
 		}
 		//if we have a graph, bind a resize event
-		if(types.includes('plotly'))
-		{
-			window.onresize = function() {
+	//	if(types.includes('plotly'))
+	//	{
+	//		window.onresize = function() {
 					// todo - change this for a jquery each()
-					Plotly.Plots.resize('plotly_box');
-					Plotly.Plots.resize('plotly_violin');    
-				}
-		};
+	//			console.log('resize');
+				//	Plotly.Plots.resize('plotly_box');
+				//	Plotly.Plots.resize('plotly_violin');    
+	//			}
+	//	};
 		//setup date range picker if available
 		$('#daterangestart').html(moment().subtract(30,'days').format('YYYY-MM-DD'));
 		$('#daterangeend').html(moment().format('YYYY-MM-DD'));
@@ -182,7 +197,8 @@
 		//bind the print button
 		//$('#printhelp div.unbound').on('click', function(){togglePrint();}).removeClass("unbound");
 		 $('body').on('change','.selectpicker',function(){ picklist(this)   }); // better way of binding events to controls 
-		 $('body').on('click','a.buttonpusher.selectall',function(){ allbuttonpush(this)   }); // better way of binding events to controls 
+		 $('body').on('click','a.buttonpusher.selectall',function(){ allbuttonpush(this,true)   }); // better way of binding events to controls 
+		 $('body').on('click','a.buttonpusher.clearall',function(){ allbuttonpush(this,false)   });
 		setTimeout(function(){
 			console.log('binding');
 			console.log($('#printhelp div.newprintmode'));
@@ -425,10 +441,18 @@
 		c.html(selected.toString());
 	}
 	
-	// any 'select all' buttons will be bound to this function
-	function allbuttonpush(field){
-		$(field).addClass('active');
-		$(field).parent().find('a:not(.active)').each(function(){buttonpush(this)}).addClass('active');
+	// any 'select all' or 'clearall' buttons will be bound to this function
+	function allbuttonpush(field,state){
+		if(state)
+		{
+		  $(field).addClass('active');
+		  $(field).parent().find('a:not(.active)').each(function(){buttonpush(this)}).addClass('active');
+		}
+		else
+		{
+		  $(field).removeClass('active');
+		  $(field).parent().find('a.active').each(function(){buttonpush(this)}).removeClass('active');
+		}
 		refreshLookups();		
 	}
 	
@@ -956,14 +980,16 @@
 			
 			// Add event listener clicking on table and showing on map
              $('#'+config.tab).on('click', 'td', function () {
-                 console.log('update map on table click');
-                var tr = $(this).closest('tr');
-                var row = myTable.row(tr);
-                // This is our class-populated row number
-                var idx = Number(tr.attr('class').match(/(?:row-)(\d+)/)[1]) + 1;
-                // Zoom to clicked record on map
-                console.log('centre on '+idx);
-                maplace.ViewOnMap(idx);
+				if(typeof(maplace)!='undefined' && maplace.Loaded){ 
+					 console.log('update map on table click');
+					var tr = $(this).closest('tr');
+					var row = myTable.row(tr);
+					// This is our class-populated row number
+					var idx = Number(tr.attr('class').match(/(?:row-)(\d+)/)[1]) + 1;
+					// Zoom to clicked record on map
+					console.log('centre on '+idx);
+					maplace.ViewOnMap(idx);
+				}
             }); 
 			
 
@@ -991,7 +1017,7 @@
 		// put name and display into a bootstrap button list
 		var $buttonbox = $('#'+config.tab);
 		var selected= $('#'+config.variable).text(); //data must be comma separated list of selected buttons - NO SPACES
-		$buttonbox.find('a:not(.selectall)').remove().end(); //remove existing buttons
+		$buttonbox.find('a:not(.selectall):not(.clearall)').remove().end(); //remove existing buttons
 		$.each(data.transformed.rows_data, function() {
 			//if this.name is present within selected, set the button to be active
 			var active= selected.split(',').includes(this.name);
@@ -1401,11 +1427,13 @@
                 {    
                     // console.log(data[linkIdx]);
                     var loc = {
-                        
+                        'rowID':rowLoop,
+						'tableID':config.tab,
                         'lat': data[locIdx].split(', ')[0],
                         'lon': data[locIdx].split(', ')[1],
                         'html': '<a target="_parent" href="'+data[linkIdx]+'">'+data[0]+'</a>',
                         'icon':  (typeof(iconIdx)!='undefined' ? data[iconIdx] : '')
+				
                     };
 					if(config.maptemplate){
 						loc.html = $('#'+config.maptemplate).html();
@@ -1468,7 +1496,8 @@
 					avoidHighways: false,
 					avoidTolls: false
 				},
-				map_options: {set_center: config.map.center, zoom:config.map.zoom}
+				map_options: {set_center: config.map.center, zoom:config.map.zoom},
+				afterOpenInfowindow: maplaceHiglightRow
 				}).Load();
 		}
 	
