@@ -69,15 +69,11 @@
 				
 		//load all the scripts we need
 		var scripts=[];
-		var jsfolder=$('script[src$="oco.js"]').attr('src').replace('oco.js', '');
-		if (jsfolder=='')
-		{
-			jsfolder=$('script[src$="oco-beta.js"]').attr('src').replace('oco-beta.js', '');
-		}
-		if (jsfolder=='')
-		{
-			jsfolder=$('script[src$="oco.min.js"]').attr('src').replace('oco.min.js', '');
-		}
+		var thisscript='oco.js';
+		(typeof($('script[src$="'+thisscript+'"]').attr('src'))=='undefined'?thisscript='oco.min.js':void 0);
+		(typeof($('script[src$="'+thisscript+'"]').attr('src'))=='undefined'?thisscript='oco.beta.js':void 0);
+		var jsfolder=$('script[src$="'+thisscript+'"]').attr('src').replace(thisscript, '');
+		
 		$.ajaxSetup({cache: true});
 
 		scripts.push(jsfolder+'moment/moment.min.js');
@@ -151,11 +147,22 @@
 				//	Plotly.Plots.resize('plotly_violin');    
 	//			}
 	//	};
-		//setup date range picker if available
-		$('#daterangestart').html(moment().subtract(30,'days').format('YYYY-MM-DD'));
-		$('#daterangeend').html(moment().format('YYYY-MM-DD'));
+		//set initial config values from cookie
+		console.log('starting up. cookie:');
+		var decodedCookie = decodeURIComponent(document.cookie).split(';')
+		for(var i = 0; i <decodedCookie.length; i++) {
+			var cookiebite=decodedCookie[i].split('=');
+			$('#'+cookiebite[0].trim()+'.config').html(cookiebite[1]);		
+		}
 
-		$('input[name="daterange"]').val( moment().subtract(30,'days').format('DD MMM YYYY HH:mm')+' - '+ moment().format('DD MMM YYYY HH:mm'));
+
+		//setup date range picker if available
+		if(!moment($('#daterangestart').html(), 'YYYY-MM-DD HH:mm', true).isValid()){
+			$('#daterangestart').html(moment().subtract(30,'days').format('YYYY-MM-DD 00:00'));
+			$('#daterangeend').html(moment().format('YYYY-MM-DD 00:00'));
+		}
+//		$('input[name="daterange"]').val( moment().subtract(30,'days').format('DD MMM YYYY HH:mm')+' - '+ moment().format('DD MMM YYYY HH:mm'));
+		$('input[name="daterange"]').val( moment($('#daterangestart').html()).format('DD MMM YYYY HH:mm')+' - '+ moment($('#daterangeend').html()).format('DD MMM YYYY HH:mm'));
 		$('input[name="daterange"]').daterangepicker({
 			
 			timePicker: true,
@@ -169,12 +176,12 @@
 					moment().format('DD MMM YYYY HH:mm')
 				],
 				"Last 7 days": [
-					moment().subtract(7,'days').format('DD MMM YYYY HH:mm'),
-					moment().format('DD MMM YYYY HH:mm')
+					moment().subtract(7,'days').format('DD MMM YYYY 00:00'),
+					moment().format('DD MMM YYYY 00:00')
 				],
 				"Last 30 days": [
-					moment().subtract(30,'days').format('DD MMM YYYY HH:mm'),
-					moment().format('DD MMM YYYY HH:mm')
+					moment().subtract(30,'days').format('DD MMM YYYY 00:00'),
+					moment().format('DD MMM YYYY 00:00')
 				],
 				"Last month": [
 					moment().subtract(moment().date()-1,'days').subtract(1,'month').format('DD MMM YYYY 00:00'),
@@ -215,7 +222,6 @@
 				setupCalendar(config[i]);
 			}
 		}
-
 		//run the lookups
 		refreshLookups();
 		// bind events to redraw plotly graphs when tabs are changed
@@ -439,6 +445,7 @@
 			selected.push(field.value);
 		}
 		c.html(selected.toString());
+		document.cookie=field.getAttribute('config')+"="+selected.toString()+";path="+document.location.pathname;
 	}
 	
 	// any 'select all' or 'clearall' buttons will be bound to this function
@@ -458,11 +465,14 @@
 	
 	function picklist(field){
 		$('#'+field.id+'.config').html(field.value);
+		document.cookie=field.id+"="+field.value+";path="+document.location.pathname;
 		refreshLookups();
 	}
 	function pickdate(start, end,label) {
-		$('#daterangestart').html(start.format('YYYY-MM-DD'));
-		$('#daterangeend').html(end.format('YYYY-MM-DD'));
+		$('#daterangestart').html(start.format('YYYY-MM-DD HH:mm'));
+		$('#daterangeend').html(end.format('YYYY-MM-DD HH:mm'));
+		document.cookie="daterangestart="+start.format('YYYY-MM-DD HH:mm')+";path="+document.location.pathname;
+		document.cookie="daterangeend="+end.format('YYYY-MM-DD  HH:mm')+";path="+document.location.pathname;
 		refreshLookups();
     }
 	
