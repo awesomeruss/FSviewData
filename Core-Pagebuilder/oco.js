@@ -214,6 +214,13 @@
 		 $('body').on('change','.selectpicker',function(){ picklist(this)   }); // better way of binding events to controls 
 		 $('body').on('click','a.buttonpusher.selectall',function(){ allbuttonpush(this,true)   }); // better way of binding events to controls 
 		 $('body').on('click','a.buttonpusher.clearall',function(){ allbuttonpush(this,false)   });
+		 //bind events to any 'acscriteria' checkboxes. These should have a 'data-acsconfig' property that points to a config element. We set the config element to the value and refreshLookups
+		 $('body').on('click','input.acscriteria',function(){
+			  var c=$(this).attr('data-acsconfig');
+			  $('#'+c+'.config').html($(this).prop('checked').toString());
+			  refreshLookups();
+			})
+		 
 		setTimeout(function(){
 			console.log('binding');
 			console.log($('#printhelp div.newprintmode'));
