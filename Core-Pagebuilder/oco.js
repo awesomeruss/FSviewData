@@ -171,6 +171,14 @@
 			locale: {format: 'DD MMM YYYY HH:mm',  cancelLabel: 'Clear (Show open cases)'},
 			showCustomRangeLabel:true,
 			ranges: {
+				"Next 7 days": [
+					moment().format('DD MMM YYYY 00:00'),
+					moment().add(7,'days').format('DD MMM YYYY 00:00')
+				],
+				"Next 24h": [
+					moment().format('DD MMM YYYY HH:mm'),
+					moment().add(1,'days').format('DD MMM YYYY HH:mm')
+				],
 				"Last 24h": [
 					moment().subtract(1,'days').format('DD MMM YYYY HH:mm'),
 					moment().format('DD MMM YYYY HH:mm')
