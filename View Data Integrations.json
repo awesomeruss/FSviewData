@@ -1,5 +1,19 @@
 [
     {
+        "ID": "5ef9b94fcc81e",
+        "Name": "Report process get weekly product stats",
+        "Type": "DATABASE",
+        "LIM_id": "5a53627a149ae",
+        "Editable": true,
+        "LIM_name": "CBC LIM",
+        "Category": "Data Dump",
+        "data_type": "lookup",
+        "allow_offline": 0,
+        "Output_template": "{\"systemID\":\"5963774f652ab\",\"systemName\":\"af-data-dump\",\"query\":\"select \\n\\tp.process_name,\\n\\tpr.profile_name,\\n\\ts.table_name as table_name_hhh, \\n\\tsum(s.creation_count) as Created,\\n\\tsum(s.self_count) as Self,\\n\\tsum(s.dash_count) as Dash,\\n\\tsum(s.service_count) as Service,\\n\\tsum(s.forms_count) as Forms,\\n\\tmin(s.week_commencing) as From_date,\\n\\tdateadd(dd,7,max(s.week_commencing)) as To_date\\nfrom metadata_stat s \\n\\tinner join metadata_process p on s.table_name=p.process_tablename\\n\\tleft join metadata_profile pr on s.profile_id = pr.id\\n\\t\\nwhere s.week_commencing >= {daterangestart} \\nand s.week_commencing < {daterangeend}\\n\\ngroup by \\n\\tp.process_name,\\n\\tpr.profile_name,\\n\\ts.table_name\\norder by \\tp.process_name,\\n\\tpr.profile_name,\\n\\ts.table_name\",\"results_page_columns_db\":\"\",\"secure_fields_db_database\":\"\",\"escapeTokens\":\"yes\"}",
+        "log_only_on_error": 0,
+        "error_notification": "{\"LIM_id\":\"5a53627a149ae\",\"LIM_name\":\"CBC LIM\",\"recipients_to\":\"\"}"
+    },
+    {
         "Editable": true,
         "ID": "5a7acb84ab7cb",
         "Name": "Report process get monthly submission stats",
