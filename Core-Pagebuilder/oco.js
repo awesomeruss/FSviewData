@@ -346,8 +346,11 @@
 
 					if (info.jsEvent.pageX >= x1 && info.jsEvent.pageX<= x2 &&
 						info.jsEvent.pageY >= y1 && info.jsEvent.pageY <= y2) {
-						var d={ eventID:info.event.id};
-						$(info.event._calendar.el).parent().find('.status').html('Deleting...')
+						var d={ eventID:info.event.id, start:info.event.start, end: info.event.end};
+						$.extend(d,info.event.extendedProps);					
+						(d.eventID==''?d.eventID=d.sql_id:void 0);
+					
+						$(info.event._calendar.el).parent().find('.status').html('Deleting...');
 
 						//run lookup to delete the event. only actually delete if it succeeds 
 						run_lookup(configitem.lookup_eventdelete,get_config(d), function(responsedata){
