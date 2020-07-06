@@ -246,6 +246,23 @@
 	
 	}
 	
+	//run the function on every node in a json object
+	function traverse(o,func) {
+		for (var i in o) {			
+			if (o[i] !== null && typeof(o[i])=="object") {
+				//going one step down in the object tree!!
+				traverse(o[i],func);
+			}
+			o[i]=func.apply(this,[i,o[i]]);
+		}
+	}
+	
+	//convert a boolean string to an actual boolean.
+	function StringToBool(key, value){
+		var b = ["true","false"]; 
+		return (b.includes(value.toString().toLowerCase())?value.toString().toLowerCase()==='true':value)
+		}
+	
 	function check_calendar_save(responsedata, revertfunction, successfunction){
 		//if there is an error response or an error message in the data, call the revert function. otherwise call the successfunction
 		console.log('checking save response...');
@@ -272,7 +289,7 @@
 	function setupCalendar(configitem){
 		var calendarEl = $('#'+configitem.tab+' .fullcalendar')[0];
 		var trashEl = $('#'+configitem.tab+' .trashcan')[0];
-		
+		traverse(configitem,StringToBool); //changes things like "editable":"true" into "editable":true, which is important.
 		
 		
 		if (typeof(calendarEl)!='undefined'){	 
@@ -283,6 +300,7 @@
 				calendarObj.events=  function(info, successCallback, failureCallback) {
 				//	$(info.event._calendar.el).parent().find('.status').html('Loading events...')
 					run_lookup(configitem.lookup_event,get_config(info), function(responsedata){
+						traverse(responsedata.transformed.rows_data,StringToBool);
 						successCallback(Object.values(responsedata.transformed.rows_data));
 				//		$(info.event._calendar.el).parent().find('.status').html('Ready');
 						}, failureCallback );
@@ -301,9 +319,12 @@
 					$(info.event._calendar.el).parent().find('.status').html('Saving...')
 					//all we need is - event id, old resource id, new resource id, new start, new end
 					var d={ eventID:info.event.id, start:info.event.start, end: info.event.end, oldResource:(info.oldResource?info.oldResource.id:null), newResource:(info.newResource?info.newResource.id:null)};
+					$.extend(d,info.event.extendedProps);					
+					(d.eventID==''?d.eventID=d.sql_id:void 0);
 					//need to run the lookup, on failure call revert, on success call a function to check result and revert if not ok 
 					run_lookup(configitem.lookup_eventchange,get_config(d), function(responsedata){
 						check_calendar_save(responsedata,function(){info.revert()});
+						
 						$(info.event._calendar.el).parent().find('.status').html('Ready');
 						}, function(){info.revert() });
 				};
@@ -345,13 +366,20 @@
 			{
 				calendarObj.eventReceive=function(info) {
 					var d={ eventID:info.event.id, start:info.event.start, end: info.event.end, title:info.event.title};
-					rs=info.event.getResources();
+					$.extend(d,info.event.extendedProps);					
+					var rs=[];
+					if(typeof(info.event._def.resourceIds)!='undefined')
+					{
+						rs=info.event.getResources();	
+					}
 					d.resourceId=(rs.length>0?rs[0].id:'');
 					run_lookup(configitem.lookup_eventreceive,get_config(d), function(responsedata){
 						check_calendar_save(responsedata,
 							function(){info.event.remove()},
 							function(args){ 
-								info.event.setProp('id',args.transformed.rows_data[0].eventID);
+								info.event.setProp('id',args.transformed.rows_data[0].eventID); //this should work but does not
+								info.event.setExtendedProp('sql_id',args.transformed.rows_data[0].eventID);
+								((typeof(args.transformed.rows_data[0].title)!='undefined')?info.event.setProp('title',args.transformed.rows_data[0].title):void 0);
 								(args.transformed.rows_data[0].resourceId?info.event.setResources(args.transformed.rows_data[0].resourceId):void 0);
 								})}
 						, function(){info.event.remove()} );
@@ -373,7 +401,20 @@
 				  }
 				});
 			}
-			
+			if (configitem.modal_response)
+			{
+				calendarObj.eventClick= function(info){
+				console.log('modal time for event');
+				console.log(info.event.extendedProps.response);
+				
+				if($('#ModalResponse'+info.event.extendedProps.reference).length==0)
+				{
+					$('body #app-content').append('<div id="ModalResponse'+info.event.extendedProps.reference+'" class="modal fade pagebreakafter"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><button class="close" type="button" data-dismiss="modal">&times;</button><h4 class="modal-title">Case '+info.event.extendedProps.reference+'</h4></div><div class="modal-body"></div><div class="modal-footer"><button type="button" class="btn btn-default print_no" onclick="print_this(\'#ModalResponse'+info.event.extendedProps.reference+' .modal-content\')">Print</button><button class="btn btn-default" type="button" data-dismiss="modal">Close</button></div></div></div></div>');
+				}
+				$('#ModalResponse'+info.event.extendedProps.reference+' .modal-body').html('<div class="htmlsummary">'+info.event.extendedProps.response+'</div>');
+				$('#ModalResponse'+info.event.extendedProps.reference).modal('show');					
+				}
+			}
 			//similarly for get resources, eventdrop, etc
 			var calendar = new FullCalendar.Calendar(calendarEl,calendarObj);
 			calendar.render();

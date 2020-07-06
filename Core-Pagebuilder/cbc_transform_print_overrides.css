@@ -1,0 +1,4 @@
+.htmlsummary div#pref_date,
+.htmlsummary div#pref_time,
+.htmlsummary div#pref_Is_the_address
+	{display:none}
