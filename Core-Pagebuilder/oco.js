@@ -80,8 +80,11 @@
 		scripts.push(jsfolder+'showdown/showdown.min.js');
 		if(types.includes('calendar'))
 		{
+			//upgrade to 5.0.1
+			$('<link/>', {rel: 'stylesheet', type: 'text/css', href: jsfolder+'fullcal/5.0.1/lib/main.css'}).appendTo('head');
+			scripts.push(jsfolder+ "fullcal/5.0.1/lib/main.js");
 			// load some css
-			$('<link/>', {rel: 'stylesheet', type: 'text/css', href: jsfolder+'fullcal/scheduler/packages/core/main.css'}).appendTo('head');	
+/*			$('<link/>', {rel: 'stylesheet', type: 'text/css', href: jsfolder+'fullcal/scheduler/packages/core/main.css'}).appendTo('head');	
 			$('<link/>', {rel: 'stylesheet', type: 'text/css', href: jsfolder+'fullcal/scheduler/packages/daygrid/main.css'}).appendTo('head');	
 			$('<link/>', {rel: 'stylesheet', type: 'text/css', href: jsfolder+'fullcal/scheduler/packages/timegrid/main.css'}).appendTo('head');		
 			$('<link/>', {rel: 'stylesheet', type: 'text/css', href: jsfolder+'fullcal/scheduler/packages-premium/timeline/main.css'}).appendTo('head');		
@@ -93,6 +96,7 @@
 			scripts.push(jsfolder+ "fullcal/scheduler/packages-premium/timeline/main.js");
 			scripts.push(jsfolder+ "fullcal/scheduler/packages-premium/resource-common/main.js");
 			scripts.push(jsfolder+ "fullcal/scheduler/packages-premium/resource-timeline/main.js");		
+			*/
 		}
 		if(types.includes('plotly'))
 		{
@@ -316,7 +320,7 @@
 			{
 				calendarObj.eventDrop=  function(info) {
 					console.log('saving eventDrop or eventResize change');
-					$(info.event._calendar.el).parent().find('.status').html('Saving...')
+					$(info.event._context.calendarApi.el).parent().find('.status').html('Saving...')
 					//all we need is - event id, old resource id, new resource id, new start, new end
 					var d={ eventID:info.event.id, start:info.event.start, end: info.event.end, oldResource:(info.oldResource?info.oldResource.id:null), newResource:(info.newResource?info.newResource.id:null)};
 					$.extend(d,info.event.extendedProps);					
@@ -325,7 +329,7 @@
 					run_lookup(configitem.lookup_eventchange,get_config(d), function(responsedata){
 						check_calendar_save(responsedata,function(){info.revert()});
 						
-						$(info.event._calendar.el).parent().find('.status').html('Ready');
+						$(info.event._context.calendarApi.el).parent().find('.status').html('Ready');
 						}, function(){info.revert() });
 				};
 				calendarObj.eventResize=  calendarObj.eventDrop;
@@ -350,13 +354,13 @@
 						$.extend(d,info.event.extendedProps);					
 						(d.eventID==''?d.eventID=d.sql_id:void 0);
 					
-						$(info.event._calendar.el).parent().find('.status').html('Deleting...');
+						$(info.event._context.calendarApi.el).parent().find('.status').html('Deleting...');
 
 						//run lookup to delete the event. only actually delete if it succeeds 
 						run_lookup(configitem.lookup_eventdelete,get_config(d), function(responsedata){
 							check_calendar_save(responsedata,
 								function(){return 0},
-								function(args){info.event.remove();$(info.event._calendar.el).parent().find('.status').html('Ready');})}, function(){return 0} );
+								function(args){info.event.remove();$(info.event._context.calendarApi.el).parent().find('.status').html('Ready');})}, function(){return 0} );
 					
 					//info.event.remove();
 //						$('#'+configitem.tab+' .fullcalendar').fullCalendar('removeEvents', info.event.id);
@@ -380,15 +384,26 @@
 						check_calendar_save(responsedata,
 							function(){info.event.remove()},
 							function(args){ 
-								info.event.setProp('id',args.transformed.rows_data[0].eventID); //this should work but does not
-								info.event.setExtendedProp('sql_id',args.transformed.rows_data[0].eventID);
-								((typeof(args.transformed.rows_data[0].title)!='undefined')?info.event.setProp('title',args.transformed.rows_data[0].title):void 0);
-								(args.transformed.rows_data[0].resourceId?info.event.setResources(args.transformed.rows_data[0].resourceId):void 0);
+								info.event._context.calendarApi.refetchEvents();
+								//var e = info.event.toPlainObject();
+								//e.id=args.transformed.rows_data[0].eventID;
+								//((typeof(args.transformed.rows_data[0].title)!='undefined')?e.title=args.transformed.rows_data[0].title:void 0);
+								//(args.transformed.rows_data[0].resourceId?e.resourceId=args.transformed.rows_data[0].resourceId:void 0);
+								//add e to the calendar and remove info.event
+								//necessary as we can't change the ID of an event
+								//info.event._context.calendarApi.addEvent(e);
+								info.event.remove();
+							
+//								info.event.setProp('id',args.transformed.rows_data[0].eventID); //this should work but does not
+//								info.event.setExtendedProp('sql_id',args.transformed.rows_data[0].eventID);
+	//							((typeof(args.transformed.rows_data[0].title)!='undefined')?info.event.setProp('title',args.transformed.rows_data[0].title):void 0);
+	//							(args.transformed.rows_data[0].resourceId?info.event.setResources([args.transformed.rows_data[0].resourceId]):void 0);
 								})}
 						, function(){info.event.remove()} );
 					
 				}
-			   var Draggable = FullCalendarInteraction.Draggable;
+			   
+			   var Draggable = FullCalendar.Draggable;
 
 				/* initialize the external events
 				-----------------------------------------------------------------*/
@@ -419,6 +434,8 @@
 				}
 			}
 			//similarly for get resources, eventdrop, etc
+			calendarObj.plugins=[]; //not needed in 5.0.1+
+			((typeof(calendarObj.initialView)=='undefined')?calendarObj.initialView=calendarObj.defaultView:void 0);  //rename property for 5.0.1
 			var calendar = new FullCalendar.Calendar(calendarEl,calendarObj);
 			calendar.render();
 			$('#'+configitem.tab+' .spinner').hide();
