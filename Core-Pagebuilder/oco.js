@@ -72,6 +72,7 @@
 		var thisscript='oco.js';
 		(typeof($('script[src$="'+thisscript+'"]').attr('src'))=='undefined'?thisscript='oco.min.js':void 0);
 		(typeof($('script[src$="'+thisscript+'"]').attr('src'))=='undefined'?thisscript='oco.beta.js':void 0);
+		(typeof($('script[src$="'+thisscript+'"]').attr('src'))=='undefined'?thisscript='temp.js':void 0);
 		var jsfolder=$('script[src$="'+thisscript+'"]').attr('src').replace(thisscript, '');
 		
 		$.ajaxSetup({cache: true});
@@ -507,21 +508,23 @@
 	
 	function buttonpush(field){
 		//did we push or unpush?
-		var c = $('#'+field.getAttribute('config')+'.config');
-		var selected=c.html().split(',');
-		if($(field).hasClass('active'))
-		{
-			//remove element from array
-			selected.splice(selected.indexOf(field.value),1);
-			//unselect the select-all button, if it exists			
-			$(field).parent().find('.selectall').removeClass('active');
+		if(field.getAttribute('config')) {
+			var c = $('#'+field.getAttribute('config')+'.config');
+			var selected=c.html().split(',');
+			if($(field).hasClass('active'))
+			{
+				//remove element from array
+				selected.splice(selected.indexOf(field.value),1);
+				//unselect the select-all button, if it exists			
+				$(field).parent().find('.selectall').removeClass('active');
+			}
+			else
+			{
+				selected.push(field.value);
+			}
+			c.html(selected.toString());
+			document.cookie=field.getAttribute('config')+"="+selected.toString()+";path="+document.location.pathname;
 		}
-		else
-		{
-			selected.push(field.value);
-		}
-		c.html(selected.toString());
-		document.cookie=field.getAttribute('config')+"="+selected.toString()+";path="+document.location.pathname;
 	}
 	
 	// any 'select all' or 'clearall' buttons will be bound to this function
@@ -529,12 +532,12 @@
 		if(state)
 		{
 		  $(field).addClass('active');
-		  $(field).parent().find('a:not(.active)').each(function(){buttonpush(this)}).addClass('active');
+		  $(field).parent().find('a:not(.active,.clearall,.selectall)').each(function(){buttonpush(this)}).addClass('active');
 		}
 		else
 		{
 		  $(field).removeClass('active');
-		  $(field).parent().find('a.active').each(function(){buttonpush(this)}).removeClass('active');
+		  $(field).parent().find('a.active:not(.clearall,.selectall)').each(function(){buttonpush(this)}).removeClass('active');
 		}
 		refreshLookups();		
 	}
@@ -688,16 +691,58 @@
 			
 			if($('#ModalResponse'+ref).length==0)
 			{
-				$('body #app-content').append('<div id="ModalResponse'+ref+'" class="modal fade pagebreakafter"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><button class="close" type="button" data-dismiss="modal">&times;</button><h4 class="modal-title">Case '+ref+'</h4></div><div class="modal-body"></div><div class="modal-footer"><button type="button" class="btn btn-default print_no" onclick="print_this(\'#ModalResponse'+ref+' .modal-content\')">Print</button><button class="btn btn-default" type="button" data-dismiss="modal">Close</button></div></div></div></div>');
+				//three possibilities for the template:
+				//1. We have a custom template and a custom lookup - here we render the standard template wrapper with the spinner and let the ajax render the template
+				//2. We have a custom template and no lookup - render the custom template now
+				//3. No template defined, use a standard one
+				//check the config for a custom template, otherwise use the standard one
+				var template;
+				if(meta.settings.oInit.popupTemplateID && meta.settings.oInit.popupLookup)
+				{
+					//copy any existing spinner section in the page, or don't bother
+					template=($('.spinner').length>0?$('.spinner')[0].outerHTML:'')+'<div class="results"></div>'
+				}
+				else
+				{
+					if(meta.settings.oInit.popupTemplateID)
+					{
+						template=$('#'+meta.settings.oInit.popupTemplateID).html();
+					}
+					else
+					{
+						template='<div class="modal-header"><button class="close" type="button" data-dismiss="modal">&times;</button><h4 class="modal-title">Case ###ref###</h4></div><div class="modal-body"><div class="htmlsummary">###data###</div></div>'
+					}
+				}
+				template='<div id="ModalResponse###ref###" class="modal fade pagebreakafter"><div class="modal-dialog modal-lg"><div class="modal-content">'+template+'<div class="modal-footer"><button type="button" class="btn btn-default print_no" onclick="print_this(\'#ModalResponse###ref### .modal-content\')">Print</button><button class="btn btn-default" type="button" data-dismiss="modal">Close</button></div></div></div></div>';
+				template=template.replaceAll('###ref###',ref).replaceAll('###data###',data);
+				
+				$('body #app-content').append(template);
 			}
-			$('#ModalResponse'+ref+' .modal-body').html('<div class="htmlsummary">'+data+'</div>');
-
-			o='<button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#ModalResponse'+ref+'"><i class="fab fa-readme"> </i> Read</button>';
+			
+			//the line below would break custom templates, but possibly exists for odd situations where two tables have two different records with the same ref
+			//$('#ModalResponse'+ref+' .modal-body').html('<div class="htmlsummary">'+data+'</div>');
+			if (meta.settings.oInit.popupLookup)
+			{
+				o='onclick="popupAjax(\'ModalResponse'+ref.replaceAll("'","\\'")+'\',\''+data.replaceAll("'","\\'")+'\',\''+ meta.settings.oInit.popupLookup+'\',\''+ meta.settings.oInit.popupTemplateID+'\')" ';
+			}
+			else
+			{
+				o='';
+			}
+			o='<button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#ModalResponse'+ref+'" '+o+' ><i class="fab fa-readme"> </i> Read</button>';
 		}
 		// console.log('rendering '+type+'-'+data +' as '+o);
 		return o;	   
 	}
 
+	function popupAjax(id,ref,lookup,template) {
+		//populate a modal dialog with the results of a lookup
+		console.log('populateAjax called with id '+id+', ref '+ref+' and lookup '+lookup);
+		var data={'id':id,'ref':ref};
+		var ajaxConfig={'type':'template','lookup':lookup,'tab':id,'template':template}
+		get_data(ajaxConfig,data);
+	}
+	
 	function render_xml(data, type, row, meta) {
 		var o=data;
 		if(type === 'display'){
@@ -1032,6 +1077,8 @@
 				buttons:config.tablebuttons, 
 				"createdRow":rr_function, 
 				"configtab":config.tab, 
+				"popupTemplateID":(config.popupTemplateID?config.popupTemplateID:null),
+				"popupLookup":(config.popupLookup?config.popupLookup:null),
 				"sScrollX": "100%", 
 				"sScrollXInner": "100%",
 				drawCallback:(config.map?function(a){update_map(a,this.api(),config)}:null),

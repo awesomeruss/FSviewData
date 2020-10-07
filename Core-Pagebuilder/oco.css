@@ -411,6 +411,8 @@ h1, .htmlsummary > div{
 #Your_details #forms_group_name, #Your_details #subscribe, #Your_details .section {   display: none;}
 /* end of overrides */
 
+.modal-body .htmlsummary {font-size:1.2em} /* increase text size for modal popups without impacting prints */
+
 .htmlsummary .section{
   border-radius:5px; 
   padding:5px; 
@@ -452,14 +454,14 @@ h1, .htmlsummary > div{
 .htmlsummary div.value{
   color: #4A4F54;
   background-color:white;
-  width: 58%;
+  width: 68%;
   margin:1px;
   margin-left:3px;
   padding:1px;
   border-radius:2px;
 }
 .htmlsummary div.caption{
-  width:40%; 
+  width:30%; 
   text-align:right;
 }
 .htmlsummary div.para div.value,.htmlsummary div.h1 div.value,.htmlsummary div.h2 div.value,.htmlsummary div.h3 div.value,.htmlsummary div.h4 div.value{
@@ -467,7 +469,7 @@ h1, .htmlsummary > div{
   width:100%; 
 }
 .htmlsummary .subform div.caption{
-  width:40%; 
+  width:30%; 
 }
 
 .subform {width:96%; 
@@ -501,6 +503,12 @@ h1, .htmlsummary > div{
 /*	max-width:250px; */
 }
 
+.widemapimage img {
+/*    float: right; */
+    margin-left: 1%;
+	width:97.7%;
+/*	max-width:250px; */
+}
 /* print mode styles */
 	.printonly{display:none} /* use the printonly class to hide content unless in print mode */
     .printmodemsg::after {content:"Activate print mode."}
@@ -514,7 +522,7 @@ h1, .htmlsummary > div{
  }
 @media print {
 	.printready .printmodemsg::after {content:"";}
-	.modal.DO-NOT-PRINT{display:none !important;visibility:hidden;}
+	.DO-NOT-PRINT{display:none !important;visibility:hidden;}
 	.printready .printmode{display:none;}
 	
 	
