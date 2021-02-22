@@ -56,6 +56,9 @@
 		// load the scripts we need
 		if($('#pagetitle').text()!=='') window.parent.document.title=$('#pagetitle').text();
 		
+		// Add warning for IE 10 and 11
+		if(/Trident\/|MSIE/.test(window.navigator.userAgent))
+			$('<div style="margin:10px" class="alert alert-danger">You are using an outdated brower - this page may not work properly</div>').insertBefore('#app-content');
         var sid;
         if (typeof parent.FS === 'undefined' ) 
         {
@@ -64,7 +67,8 @@
 		} 
 		//load the 'type' values from the config, to check what scripts we need
 		var config=JSON.parse($('#lookup_config').text());
-		var types=config.map(x => x.type);
+		//var types=config.map(x => x.type);
+		var types=config.map(function(x){ return x.type});
 		
 				
 		//load all the scripts we need
@@ -131,7 +135,8 @@
 
 		
 		var config=JSON.parse($('#lookup_config').text());
-		var types=config.map(x => x.type);
+		//var types=config.map(x => x.type);
+		var types=config.map(function(x){ return x.type});
 
 		console.log('all scripts loaded.');
 		// setup datatables for sorting date columns properly
