@@ -28,6 +28,12 @@
 	//		it manipulates the results into the format required by datatables, creates the datatable and hides the spinner
     
 	var maplace;
+	
+	if(!Array.prototype.includes){
+		Array.prototype.includes=function(str){
+			return this.indexOf(str)!== -1;
+		}
+	}
 	function maplaceHiglightRow(index, location, marker) {
 		//highlight the corresponding row of the table
 		$('#'+marker.tableID+' .results tr').removeClass('mapclicked');
@@ -80,6 +86,7 @@
 		var jsfolder=$('script[src$="'+thisscript+'"]').attr('src').replace(thisscript, '');
 		
 		$.ajaxSetup({cache: true});
+		scripts.push('https://polyfill.io/v3/polyfill.min.js?features=features=es6');
 
 		scripts.push(jsfolder+'moment/moment.min.js');
 		scripts.push(jsfolder+'showdown/showdown.min.js');
@@ -126,8 +133,9 @@
 	function start()
 	{
 		sid = typeof parent.FS !== "undefined" && parent.FS !== null ? (ref = parent.FS.Auth) !== null ? ref.session['auth-session'] : void 0 : void 0;
-		if((typeof parent.FS.Auth.session.user =='undefined')&&($('#ucrn.config').length==0 || $('#ucrn.config').html().replace(/&nbsp;$/, '') !=''))
+		if((typeof parent.FS.Auth.session.user =='undefined')&&($('#ucrn.config').length==0 || $('#ucrn.config').html().replace(/&nbsp;$/, '') !='')&& !(/Trident\/|MSIE/.test(window.navigator.userAgent)))
 		{
+		
 			//reload the page if there is no sid
 			parent.location.reload();
 			return;
@@ -611,7 +619,7 @@
 		//return a config object suitable for passing into run_lookup, merging the supplied extraconfig with other tokens from the page and user session
 	    var t={}; 
 		sid = typeof parent.FS !== "undefined" && parent.FS !== null ? (ref = parent.FS.Auth) !== null ? ref.session['auth-session'] : void 0 : void 0;
-		if((typeof parent.FS.Auth.session.user =='undefined')&&($('#ucrn.config').length==0 || $('#ucrn.config').html().replace(/&nbsp;$/, '') !=''))
+		if((typeof parent.FS.Auth.session.user =='undefined')&&($('#ucrn.config').length==0 || $('#ucrn.config').html().replace(/&nbsp;$/, '') !='')&& !(/Trident\/|MSIE/.test(window.navigator.userAgent)))
 		{
 			//reload the page if there is no sid
 			parent.location.reload();
@@ -1616,8 +1624,34 @@
 
   }  
 
+
+	function fixdata(inputJSON){
+	//the transformed.rows_data will need to be rebuilt by parsing the xml
+	//this is because it can be missing some rows.
+		var parser=new DOMParser();
+		xmldata=parser.parseFromString(inputJSON.transformed.xml_data,"text/xml");
+		//rows_data should be an array of javascript objects like this:
+		//[0: {id: "CSFA271487069", reference: "CSFA271487069", …},…]
+		//console.log('original rows_data:');
+		//console.log(inputJSON.transformed.rows_data);
+		inputJSON.transformed.rows_data={};
+		$(xmldata).find('Row').each(function( index,el ) {
+			var r={}; //loop through columns in each row
+			$(this).find('result').each(function() {
+				r[this.getAttribute('column')]=this.textContent;
+			});
+			inputJSON.transformed.rows_data[index]=r;
+		});
+		//console.log('new rows_data:');
+		//console.log(inputJSON.transformed.rows_data);
+		
+	}
+
+
 	function draw_results(data, config) {
 //		console.log('drawing results');
+		fixdata(data);
+ 			
         $('#'+config.tab+' .spinner .msg').html('Processing results...').show();
 //		console.log("got results!");
         //console.log(data);
